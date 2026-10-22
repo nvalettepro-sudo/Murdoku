@@ -22,6 +22,7 @@ async function tapCell(page, N, r, c) {
 async function play(browser, ctxOpts, id, label) {
   const def = loadDef(id);
   const ctx = await browser.newContext(ctxOpts);
+  await ctx.addInitScript(() => { try { localStorage.setItem('murdoku:v1:seenHelp', 'true'); } catch (e) {} });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -32,12 +33,38 @@ async function play(browser, ctxOpts, id, label) {
   const sol = def.solution.split(' ').map(t => { const [n, rc] = t.split(':'); const [r, c] = rc.split(',').map(Number); return { n, r, c }; });
   // une croix d'abord (appui long simulé par l'outil Croix), puis effacement
   await page.click('[data-tool="cross"]');
-  await tapCell(page, def.size, 0, 0);
+  await tapCell(page, def.size, sol[0].r, sol[0].c); // case occupable (celle d'un suspect dans la solution)
   const crosses = await page.evaluate(() => JSON.parse(localStorage.getItem('murdoku:v1:p:' + location.hash.split('/')[2])).crosses);
   if (!Object.keys(crosses).length) errors.push('croix non posée');
   await page.click('[data-act="undo"]');
-  await page.click('[data-tool="pawn"]');
+  await page.click('[data-tool="cross"]'); // interrupteur : retour au mode normal
+  // brouillon : un même suspect posé sur deux cases, puis effacé par Annuler
+  const p0 = sol[0], i0 = def.people.findIndex(q => q.name === p0.n);
+  await page.click('[data-tool="draft"]');
+  await page.click('.card[data-i="' + i0 + '"]');
+  await tapCell(page, def.size, p0.r, p0.c);
+  const alt = sol[1];
+  await tapCell(page, def.size, alt.r, alt.c);
+  const notes = await page.evaluate(() => JSON.parse(localStorage.getItem('murdoku:v1:p:' + location.hash.split('/')[2])).notes);
+  const nb = Object.values(notes || {}).filter(l => l.includes(i0)).length;
+  if (nb !== 2) errors.push('brouillon : ' + nb + ' vignette(s) au lieu de 2');
+  // appui long sur la vignette de la bonne case : elle devient un vrai pion
+  {
+    const box = await page.locator('svg.board').boundingBox();
+    const s = 1000 / def.size;
+    const x = box.x + (16 + (p0.c + 0.5) * s) / 1032 * box.width, y = box.y + (16 + (p0.r + 0.5) * s) / 1032 * box.height;
+    await page.mouse.move(x, y); await page.mouse.down(); await page.waitForTimeout(650); await page.mouse.up();
+  }
+  const placed = await page.evaluate(() => JSON.parse(localStorage.getItem('murdoku:v1:p:' + location.hash.split('/')[2])).pos);
+  if (placed[i0] !== p0.r * def.size + p0.c) errors.push('appui long : la vignette n\u2019a pas été validée');
+  const autoX = await page.locator('path.xauto').count();
+  if (!autoX) errors.push('aucune croix automatique après placement');
+  await page.click('[data-tool="draft"]');
+  await page.click('[data-act="undo"]');
+  await page.click('[data-act="undo"]');
+  await page.click('[data-act="undo"]');
   // indice : doit sélectionner quelqu'un
+  await page.keyboard.press('Escape');
   await page.click('[data-act="hint"]');
   const sel = await page.locator('.card.selected').count();
   if (sel !== 1) errors.push('indice : aucune fiche sélectionnée');

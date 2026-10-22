@@ -14,7 +14,8 @@
   }
   function save(k, v) { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) { /* ignoré */ } }
 
-  const settings = Object.assign({ shade: true, autoCheck: false, timer: true }, load('settings', {}));
+  const settings = Object.assign({ autoCross: true, autoCheck: false, timer: true }, load('settings', {}));
+  delete settings.shade; // ancien réglage (grisé), remplacé par les croix automatiques
 
   // ---------- utilitaires ----------
   function md(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); }
@@ -64,6 +65,7 @@
   const UI = {
     pawn: '<svg viewBox="0 0 32 32"><path d="M9 28 Q8 21 12 18 Q9 15 10.5 11 Q12 6 16 6 Q20 6 21.5 11 Q23 15 20 18 Q24 21 23 28 Z" fill="currentColor"/></svg>',
     cross: '<svg viewBox="0 0 32 32"><path d="M8 8 L24 24 M24 8 L8 24" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></svg>',
+    pencil: '<svg viewBox="0 0 32 32"><path d="M6 26 L8 19 L21 6 L26 11 L13 24 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M18 9 L23 14" stroke="currentColor" stroke-width="3"/><path d="M6 26 L11 25" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
     eraser: '<svg viewBox="0 0 32 32"><path d="M5 20 L17 8 L26 17 L17 26 L11 26 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M11 14 L20 23" stroke="currentColor" stroke-width="3"/><path d="M17 26 H27" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
     undo: '<svg viewBox="0 0 32 32"><path d="M12 9 L6 15 L12 21" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 15 H19 Q26 15 26 21 Q26 27 19 27 H15" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>',
     redo: '<svg viewBox="0 0 32 32"><g transform="translate(32,0) scale(-1,1)"><path d="M12 9 L6 15 L12 21" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 15 H19 Q26 15 26 21 Q26 27 19 27 H15" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></g></svg>',
@@ -176,7 +178,7 @@
 
   function newState(def) {
     const n = def.people.length;
-    return { pos: new Array(n).fill(-1), crosses: {}, time: 0, solved: false };
+    return { pos: new Array(n).fill(-1), crosses: {}, notes: {}, time: 0, solved: false };
   }
 
   function showGame(def) {
@@ -184,8 +186,9 @@
     const saved = load('p:' + def.id, null);
     const st = saved && saved.pos && saved.pos.length === def.people.length ? saved : newState(def);
     st.crosses = st.crosses || {};
+    st.notes = st.notes || {};
     cur = {
-      def: def, P: P, st: st, tool: 'pawn', selected: -1, hover: -1, history: [], future: [],
+      def: def, P: P, st: st, tool: 'normal', selected: -1, hover: -1, history: [], future: [],
       highlight: [], marks: null, hint: null, orient: orientation()
     };
     const pal = def.palette || {};
@@ -194,6 +197,7 @@
     document.title = def.title + ' — Murdoku';
     buildStage();
     startTimer();
+    setTimeout(showFirstHelp, 300);
   }
 
   const LOGOS = {
@@ -248,7 +252,7 @@
     }
     // outils
     html += '<section class="region toolbar" style="' + box(L.toolbar) + '">' +
-      toolBtn('pawn', 'Pion', UI.pawn) + toolBtn('cross', 'Croix', UI.cross) + toolBtn('erase', 'Gomme', UI.eraser) +
+      toolBtn('cross', 'Croix', UI.cross) + toolBtn('draft', 'Brouillon', UI.pencil) +
       actBtn('undo', 'Annuler', UI.undo, 'sep') + actBtn('redo', 'Rétablir', UI.redo) +
       actBtn('hint', 'Indice', UI.hint, 'sep') + actBtn('check', 'Vérifier', UI.check) + actBtn('reset', 'Effacer', UI.reset) +
       (settings.timer && cur.orient === 'landscape' ? '<span class="timer" aria-label="Temps">' + fmtTime(cur.st.time) + '</span>' : '') + '</section>';
@@ -498,9 +502,10 @@
     const st = cur.st;
     const culprit = st.solved ? E.culpritOf(cur.P, st.pos) : -1;
     cur.dyn.innerHTML = B.dynamicLayer(cur.P, {
-      pos: st.pos, crosses: st.crosses, shade: settings.shade && !st.solved, hover: cur.hover,
+      pos: st.pos, crosses: st.crosses, notes: st.notes, autoCross: settings.autoCross && !st.solved, hover: cur.hover,
       highlight: cur.highlight, marks: cur.marks, selected: cur.selected, solved: st.solved, culprit: culprit,
-      crossColor: cur.def.theme === 'family' ? '#c0392b' : '#33335f'
+      crossColor: cur.def.theme === 'family' ? '#c0392b' : '#33335f',
+      autoCrossColor: cur.def.theme === 'family' ? '#e0a49c' : '#97a0c6'
     });
     cur.svg.classList.toggle('solved', !!st.solved);
   }
@@ -525,6 +530,8 @@
     if (u) u.disabled = !cur.history.length;
     if (r) r.disabled = !cur.future.length;
     cur.stage.querySelectorAll('[data-tool]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.tool === cur.tool); });
+    cur.stage.classList.toggle('mode-draft', cur.tool === 'draft');
+    cur.stage.classList.toggle('mode-cross', cur.tool === 'cross');
   }
 
   // ---------- mise à l'échelle ----------
@@ -552,7 +559,7 @@
   });
 
   // ---------- état, historique ----------
-  function snapshot() { return JSON.stringify({ pos: cur.st.pos, crosses: cur.st.crosses }); }
+  function snapshot() { return JSON.stringify({ pos: cur.st.pos, crosses: cur.st.crosses, notes: cur.st.notes }); }
   function pushHistory() {
     cur.history.push(snapshot());
     if (cur.history.length > 300) cur.history.shift();
@@ -560,10 +567,10 @@
   }
   function restore(snap) {
     const o = JSON.parse(snap);
-    cur.st.pos = o.pos; cur.st.crosses = o.crosses;
+    cur.st.pos = o.pos; cur.st.crosses = o.crosses; cur.st.notes = o.notes || {};
   }
   function persist() {
-    save('p:' + cur.def.id, { pos: cur.st.pos, crosses: cur.st.crosses, time: cur.st.time, solved: cur.st.solved });
+    save('p:' + cur.def.id, { pos: cur.st.pos, crosses: cur.st.crosses, notes: cur.st.notes, time: cur.st.time, solved: cur.st.solved });
   }
   function changed() {
     cur.marks = null;
@@ -581,20 +588,53 @@
   }
 
   function placeAt(i, k) {
-    const P = cur.P, st = cur.st;
-    if (st.solved) return;
+    const P = cur.P, st = cur.st, N = P.N;
+    if (st.solved) return false;
     if (P.blocked[k]) {
       const what = cellName(k);
       toast('Cette case ne peut pas être occupée' + (what ? ' (' + what + ')' : '') + '.');
-      return;
+      return false;
+    }
+    // une personne par rangée et par colonne : on signale le conflit plutôt que de l'accepter
+    const r = Math.floor(k / N), c = k % N;
+    for (let j = 0; j < st.pos.length; j++) {
+      if (j === i || st.pos[j] < 0) continue;
+      const rj = Math.floor(st.pos[j] / N), cj = st.pos[j] % N;
+      if (rj === r || cj === c) {
+        toast((rj === r ? 'Cette rangée' : 'Cette colonne') + ' est déjà occupée par ' + P.people[j].name + '.');
+        return false;
+      }
     }
     pushHistory();
-    const occ = st.pos.indexOf(k);
-    if (occ >= 0 && occ !== i) st.pos[occ] = -1;
     st.pos[i] = k;
     delete st.crosses[k];
+    clearNotesOf(i);
     cur.selected = -1;
     changed();
+    return true;
+  }
+
+  // Retire toutes les vignettes de brouillon d'un suspect (il vient d'être placé pour de bon)
+  function clearNotesOf(i) {
+    const notes = cur.st.notes;
+    Object.keys(notes).forEach(function (k) {
+      const l = notes[k].filter(function (x) { return x !== i; });
+      if (l.length) notes[k] = l; else delete notes[k];
+    });
+  }
+
+  // Ajoute ou retire la vignette du suspect i dans la case k
+  function toggleNote(i, k) {
+    const P = cur.P, st = cur.st;
+    if (P.blocked[k]) { toast('Cette case ne peut pas être occupée.'); return; }
+    if (st.pos.indexOf(k) >= 0) { toast('Cette case est déjà occupée par un pion.'); return; }
+    pushHistory();
+    const l = (st.notes[k] || []).slice();
+    const at = l.indexOf(i);
+    if (at >= 0) l.splice(at, 1); else l.push(i);
+    if (l.length) st.notes[k] = l; else delete st.notes[k];
+    persist();
+    renderAll();
   }
 
   function removeAt(k) {
@@ -610,6 +650,7 @@
   function setCross(k, on) {
     const st = cur.st;
     if (st.pos.indexOf(k) >= 0) return false;
+    if (on && cur.P.blocked[k]) return false; // un objet non occupable est déjà « interdit » : pas de croix
     if (!!st.crosses[k] === on) return false;
     if (on) st.crosses[k] = 1; else delete st.crosses[k];
     return true;
@@ -619,9 +660,19 @@
     const st = cur.st;
     if (st.solved) { toast('Énigme résolue ! Touche « Effacer » pour recommencer.'); return; }
     const occ = st.pos.indexOf(k);
+    if (cur.tool === 'draft') {
+      if (cur.selected < 0) {
+        if (occ >= 0) { selectPerson(occ); return; }
+        toast('Brouillon : choisis un suspect, puis touche toutes les cases possibles.');
+        return;
+      }
+      if (occ === cur.selected) { pushHistory(); st.pos[occ] = -1; changed(); return; }
+      toggleNote(cur.selected, k);
+      return;
+    }
     if (cur.selected >= 0) {
       if (occ === cur.selected) {
-        pushHistory(); st.pos[occ] = -1; changed(); return;
+        pushHistory(); st.pos[occ] = -1; cur.selected = -1; changed(); return;
       }
       placeAt(cur.selected, k);
       return;
@@ -632,9 +683,30 @@
     changed();
   }
 
+  // Appui long : en brouillon, transforme une vignette en vrai pion ; sinon, croix rapide.
+  function longPress(k) {
+    const st = cur.st;
+    if (st.solved || st.pos.indexOf(k) >= 0) return false;
+    if (cur.tool === 'draft') {
+      const l = st.notes[k] || [];
+      let who = -1;
+      if (cur.selected >= 0 && l.indexOf(cur.selected) >= 0) who = cur.selected;
+      else if (l.length === 1) who = l[0];
+      if (who >= 0) {
+        if (placeAt(who, k)) toast(cur.P.people[who].name + ' est placé' + (cur.P.people[who].gender === 'f' ? 'e' : '') + ' : hypothèse validée.');
+        return true;
+      }
+      if (l.length > 1) { toast('Plusieurs vignettes ici : choisis d\u2019abord le suspect à valider.'); return true; }
+    }
+    pushHistory();
+    setCross(k, !st.crosses[k]);
+    changed();
+    return true;
+  }
+
   function selectPerson(i) {
     cur.selected = cur.selected === i ? -1 : i;
-    if (cur.tool !== 'pawn') { cur.tool = 'pawn'; }
+    if (cur.tool === 'cross') cur.tool = 'normal';
     renderAll();
   }
 
@@ -728,7 +800,7 @@
   }
 
   function doReset() {
-    confirmModal('Effacer la grille ?', 'Tous les pions et toutes les croix seront retirés.', 'Effacer', function () {
+    confirmModal('Effacer la grille ?', 'Tous les pions, croix et vignettes de brouillon seront retirés.', 'Effacer', function () {
       pushHistory();
       const t = cur.st.solved ? 0 : cur.st.time;
       cur.st = newState(cur.def);
@@ -758,8 +830,10 @@
     const stage = cur.stage;
     stage.querySelectorAll('[data-tool]').forEach(function (b) {
       b.addEventListener('click', function () {
-        cur.tool = b.dataset.tool;
-        if (cur.tool !== 'pawn') cur.selected = -1;
+        // Croix et Brouillon sont des interrupteurs : un second appui revient au mode normal
+        cur.tool = cur.tool === b.dataset.tool ? 'normal' : b.dataset.tool;
+        if (cur.tool === 'cross') cur.selected = -1;
+        if (cur.tool === 'draft') toast('Brouillon : choisis un suspect, puis touche toutes les cases possibles. Appui long sur une vignette pour la valider.', 4200);
         renderAll();
       });
     });
@@ -811,29 +885,19 @@
       try { svg.setPointerCapture(e.pointerId); } catch (err) { /* ignoré */ }
       const right = e.button === 2;
       gest = { k: k, last: k, tool: right ? 'cross' : cur.tool, moved: false, done: false, start: Date.now(), pushed: false };
-      if (cur.st.solved && gest.tool !== 'pawn') { gest = null; return; }
+      if (cur.st.solved && gest.tool === 'cross') { gest = null; return; }
       if (gest.tool === 'cross') {
         pushHistory(); gest.pushed = true;
         gest.on = !cur.st.crosses[k];
         if (cur.st.pos.indexOf(k) >= 0) gest.on = false;
         setCross(k, gest.on);
         renderBoard();
-      } else if (gest.tool === 'erase') {
-        pushHistory(); gest.pushed = true;
-        const occ = cur.st.pos.indexOf(k);
-        if (occ >= 0) cur.st.pos[occ] = -1;
-        delete cur.st.crosses[k];
-        renderBoard();
       } else {
-        // appui long = croix rapide
+        // appui long : croix rapide, ou validation d'une vignette en mode brouillon
         gest.timer = setTimeout(function () {
           if (!gest || gest.moved) return;
           gest.done = true;
-          if (cur.st.pos.indexOf(k) >= 0 || cur.st.solved) return;
-          pushHistory();
-          setCross(k, !cur.st.crosses[k]);
-          if (navigator.vibrate) navigator.vibrate(12);
-          changed();
+          if (longPress(k) && navigator.vibrate) navigator.vibrate(12);
         }, 450);
       }
     });
@@ -846,18 +910,13 @@
       if (k < 0 || k === gest.last) return;
       gest.last = k; gest.moved = true;
       if (gest.tool === 'cross') { if (setCross(k, gest.on)) renderBoard(); }
-      else if (gest.tool === 'erase') {
-        const occ = cur.st.pos.indexOf(k);
-        if (occ >= 0) cur.st.pos[occ] = -1;
-        delete cur.st.crosses[k];
-        renderBoard();
-      } else if (gest.timer) { clearTimeout(gest.timer); }
+      else if (gest.timer) { clearTimeout(gest.timer); }
     });
     function end(e) {
       if (!gest) return;
       const g = gest; gest = null;
       if (g.timer) clearTimeout(g.timer);
-      if (g.tool === 'cross' || g.tool === 'erase') { changed(); return; }
+      if (g.tool === 'cross') { changed(); return; }
       if (g.done) return;
       const k = cellFromEvent(e);
       if (k >= 0 && k === g.k) tapCell(k);
@@ -877,9 +936,9 @@
     if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (k === 'Escape') { cur.selected = -1; cur.highlight = []; renderAll(); return; }
-    if (k === '1') { cur.tool = 'pawn'; renderAll(); return; }
+    if (k === '1') { cur.tool = 'normal'; renderAll(); return; }
     if (k === '2') { cur.tool = 'cross'; cur.selected = -1; renderAll(); return; }
-    if (k === '3') { cur.tool = 'erase'; cur.selected = -1; renderAll(); return; }
+    if (k === '3') { cur.tool = 'draft'; renderAll(); return; }
     if (k === '?') { doHint(); return; }
     if (/^[a-zA-Z]$/.test(k)) {
       const i = cur.P.people.findIndex(function (p) { return p.name[0].toLowerCase() === k.toLowerCase(); });
@@ -948,7 +1007,7 @@
 
   function showSettings() {
     const rows = [
-      ['shade', 'Griser les rangées et colonnes occupées', 'Une personne par rangée et par colonne : les cases bloquées sont assombries.'],
+      ['autoCross', 'Croix automatiques', 'Quand un suspect est placé, les cases libres de sa rangée et de sa colonne reçoivent une croix claire. Tes croix restent en foncé.'],
       ['autoCheck', 'Signaler les indices non respectés', 'Affiche ✓ ou ✗ sur la fiche d’un suspect placé. Plus facile !'],
       ['timer', 'Afficher le chronomètre', 'Le temps est toujours enregistré.']
     ];
@@ -956,9 +1015,8 @@
       return '<div class="row"><div><b>' + r[1] + '</b><br><span style="font-size:15px;color:#666">' + r[2] + '</span></div>' +
         '<label class="switch"><input type="checkbox" data-k="' + r[0] + '"' + (settings[r[0]] ? ' checked' : '') + ' aria-label="' + esc(r[1]) + '"><span></span></label></div>';
     }).join('') + '<h3>Commandes</h3><ul>' +
-      '<li><b>Placer :</b> touche une fiche, puis une case. Touche le pion à nouveau pour le retirer.</li>' +
-      '<li><b>Croix :</b> appui long sur une case (ou clic droit), ou outil « Croix » en glissant le doigt.</li>' +
-      '<li><b>Clavier :</b> initiale d’un suspect pour le sélectionner, 1-2-3 pour les outils, Ctrl+Z pour annuler, ? pour un indice.</li></ul>' +
+      gesturesHtml() +
+      '<ul><li><b>Clavier :</b> initiale d’un suspect pour le sélectionner, 1 = normal, 2 = Croix, 3 = Brouillon, Ctrl+Z pour annuler, ? pour un indice.</li></ul>' +
       '<h3>Progression</h3><p><button class="pill-btn" data-x="wipe">Effacer toute ma progression</button></p>');
     m.querySelectorAll('input[data-k]').forEach(function (inp) {
       inp.addEventListener('change', function () {
@@ -973,6 +1031,21 @@
       toast('Progression effacée.');
       if (cur) showGame(cur.def); else showHome();
     });
+  }
+
+  function gesturesHtml() {
+    return '<ol class="gestures">' +
+      '<li><b>Placer</b> : touche un suspect, puis sa case. Touche le pion pour le sélectionner, puis encore pour le retirer.</li>' +
+      '<li><b>Croix</b> : touche une case vide (ou appui long, ou clic droit) pour la marquer impossible. Le bouton <b>Croix</b> permet d\u2019en tracer plusieurs en glissant le doigt. Les croix claires sont posées automatiquement autour des suspects placés.</li>' +
+      '<li><b>Brouillon</b> : active le bouton, choisis un suspect et touche toutes ses cases possibles : des vignettes apparaissent, autant que tu veux. <b>Appui long</b> sur une vignette pour la transformer en vrai pion.</li></ol>';
+  }
+
+  function showFirstHelp() {
+    if (load('seenHelp', false)) return;
+    save('seenHelp', true);
+    const m = openModal('<h2>Comment jouer en 3 gestes</h2>' + gesturesHtml() +
+      '<div class="win"><div class="actions"><button class="pill-btn btn-primary" data-x="ok">C\u2019est parti !</button></div></div>');
+    m.querySelector('[data-x="ok"]').addEventListener('click', closeModal);
   }
 
   function showRules() {
@@ -1004,10 +1077,8 @@
       '<li><b>Capacité des zones :</b> compte les cases libres d’une zone et les personnes qui doivent y aller.</li>' +
       '<li><b>Lis les indices à la lettre :</b> « seul », « seule personne », « à côté » ont un sens précis.</li>' +
       '<li><b>Garde le meurtre pour la fin :</b> la paire victime-meurtrier sert de vérification finale.</li></ul>' +
-      '<h3>Commandes</h3><ul>' +
-      '<li>Touche une <b>fiche suspect</b>, puis une <b>case</b> pour y poser son pion. Touche le pion pour le retirer, ou une autre case pour le déplacer.</li>' +
-      '<li><b>Appui long</b> (ou clic droit) sur une case : croix « impossible ». L’outil <b>Croix</b> permet d’en tracer plusieurs en glissant.</li>' +
-      '<li><b>Indice</b> : 1er appui = qui regarder, 2e = cases possibles, 3e = placement. <b>Vérifier</b> signale les pions mal placés.</li>' +
+      '<h3>Commandes</h3>' + gesturesHtml() +
+      '<ul><li><b>Indice</b> : 1er appui = qui regarder, 2e = cases possibles, 3e = placement. <b>Vérifier</b> signale les pions mal placés.</li>' +
       '<li>La partie est sauvegardée automatiquement sur cet appareil.</li></ul>' +
       '<p style="font-size:14px;color:#6a6a7a;margin-top:20px">Murdoku est une création de Manuel Garand (murdoku.com). Adaptation web non officielle, en français, pour un usage personnel.</p>');
   }
