@@ -119,7 +119,7 @@
       '<p>Lis les indices, place chaque suspect sur la scène de crime… et démasque le meurtrier.</p></div>' +
       '<div class="home-actions"><button class="pill-btn" data-act="rules">' + UI.help + 'Comment jouer</button>' +
       '<button class="pill-btn" data-act="settings">' + UI.gear + 'Options</button></div></header>' +
-      '<section class="home-section howto"><h2>Comment jouer en 3 gestes</h2><div class="steps">' + stepsHtml() + '</div>' +
+      '<section class="home-section howto"><h2>Quick guide : les règles en 3 points</h2><div class="steps">' + stepsHtml() + '</div>' +
       '<p class="more">Toutes les règles du jeu et les astuces de l’application : <button class="link-btn" data-act="rules2">Comment jouer</button></p></section>';
     groups.forEach(function (g) {
       if (!g.items.length) return;
@@ -150,15 +150,22 @@
     B.fitLabels(app);
   }
 
-  // Les 3 gestes de base (affichés sur le Menu)
+  // Quick guide : 3 points (règle du jeu + geste dans cette version), affichés sur le Menu
   function stepsHtml() {
     const items = [
-      ['1', 'Place', 'Touche un suspect, puis la case où il se trouvait. Touche son pion pour le retirer.'],
-      ['2', 'Élimine', 'Touche une case vide pour la marquer d’une croix, ou glisse le doigt pour en tracer plusieurs. Des croix claires se posent aussi toutes seules.'],
-      ['3', 'Hésite', 'Active Brouillon pour poser un suspect sur plusieurs cases possibles. Appui long sur une vignette pour la valider.']
+      ['1', 'Lis les indices et place les suspects',
+        'Chaque suspect se trouve dans une case libre, selon son indice (pièce, objet, voisin).',
+        'Touche un suspect, puis sa case. Touche son pion pour le retirer.'],
+      ['2', 'Une personne par rangée et par colonne',
+        'Dès qu’un suspect est placé, plus personne d’autre sur sa rangée ni sur sa colonne.',
+        'Touche une case vide pour une croix, ou glisse pour en tracer plusieurs. Des croix claires se posent aussi toutes seules.'],
+      ['3', 'Démasque le meurtrier',
+        'Place tout le monde, victime comprise : le meurtrier était seul avec elle, dans la même pièce.',
+        'Un doute ? Active Brouillon, pose un suspect sur plusieurs cases, puis appui long sur une vignette pour la valider.']
     ];
     return items.map(function (it) {
-      return '<div class="step"><span class="n">' + it[0] + '</span><div><h3>' + it[1] + '</h3><p>' + it[2] + '</p></div></div>';
+      return '<div class="step"><span class="n">' + it[0] + '</span><div><h3>' + it[1] + '</h3>' +
+        '<p class="rule">' + it[2] + '</p><p class="app"><b>Sur l’écran :</b> ' + it[3] + '</p></div></div>';
     }).join('');
   }
 

@@ -257,6 +257,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 4px s
 .howto .step .n { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 800; font-size: 19px; display: grid; place-items: center; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--outline); }
 .howto .step h3 { margin: 0 0 3px; font-size: 18px; font-weight: 800; }
 .howto .step p { margin: 0; font-size: 14.5px; line-height: 1.4; font-weight: 500; }
+.howto .step p.app { margin-top: 8px; padding-top: 8px; border-top: 2px dashed #c9cde6; color: #34345a; }
+.howto .step p.app b { color: var(--accent); font-weight: 800; }
 .howto .more { margin: 12px 2px 0; font-size: 15px; color: #f4f4ff; }
 .link-btn { background: none; border: 0; padding: 0; color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; font-size: inherit; }
 .modal .pair { margin: 4px 0; }

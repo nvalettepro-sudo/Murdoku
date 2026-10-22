@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.4',
+    VERSION: '1.5',
     DATE: '2026-10-22',
     HISTORY: [
+      { v: '1.5', d: '2026-10-22', t: 'Menu : Quick guide en 3 points qui résume les règles du jeu et la manière de jouer dans cette version.' },
       { v: '1.4', d: '2026-10-22', t: 'Boutons Indice et Vérifier masqués par défaut (activables dans les Options). Le portrait d’un suspect placé sur la grille est grisé dans la liste.' },
       { v: '1.3', d: '2026-10-22', t: 'Police unique, étiquettes de pièces dans leur pièce, bouton Menu, aide fusionnée (règles et instructions), croix tracées en glissant sans bouton, suppression des énigmes famille.' },
       { v: '1.2', d: '2026-10-22', t: 'Numéro de version et date affichés sur l’accueil et dans les Options.' },
