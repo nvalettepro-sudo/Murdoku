@@ -46,7 +46,7 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 - **Indice progressif** : le premier appui désigne qui regarder, le deuxième montre les cases possibles, le troisième place le pion.
 - **Vérifier** : signale les pions mal placés.
 - **Annuler et rétablir**, chronomètre, et sauvegarde automatique sur l'appareil.
-- **Options** : griser les rangées et colonnes occupées, et signaler les indices non respectés.
+- **Options** : activer ou non les croix automatiques, signaler les indices non respectés, afficher le chronomètre.
 - **Clavier** : l'initiale d'un suspect le sélectionne. La touche 1 revient au mode normal, 2 active Croix, 3 active Brouillon. Ctrl+Z annule.
 
 ## Structure
