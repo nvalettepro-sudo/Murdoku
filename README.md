@@ -35,6 +35,7 @@ Le jeu s'installe alors comme une application, et reste jouable hors ligne aprè
 | Le Zoo | The Zoo | 16×16 | expert |
 
 Le solveur a vérifié chaque énigme : elle a une solution unique, et le coupable correspond à la page solution officielle.
+Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la première déduction de la solution officielle, qui place Joseph et Lyra. La recherche complète dépasse 25 minutes.
 
 ## Fonctionnalités
 
