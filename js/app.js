@@ -5,7 +5,9 @@
   const esc = B.esc;
   const PUZZLES = (window.MURDOKU_PUZZLES || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
   const SOLUTIONS = window.MURDOKU_SOLUTIONS || {};
-  const KEY = 'murdoku:v1:';
+  // Les aperçus de PR (…/preview/pr-N/) ont leurs propres sauvegardes, séparées du site officiel
+  const PREVIEW = (location.pathname.match(/\/preview\/(pr-\d+)\//) || [])[1] || null;
+  const KEY = PREVIEW ? 'murdoku:' + PREVIEW + ':' : 'murdoku:v1:';
   const VER = window.MURDOKU_VERSION || { VERSION: '?', DATE: '', HISTORY: [] };
   // Date au format français (2026-10-22 → 22/10/2026)
   function frDate(iso) { const a = String(iso).split('-'); return a.length === 3 ? a[2] + '/' + a[1] + '/' + a[0] : iso; }
@@ -138,7 +140,7 @@
       });
       html += '</div></section>';
     });
-    html += '<footer class="home-foot"><p class="version"><b>' + esc(versionLabel()) + '</b></p>Murdoku est un jeu créé par Manuel Garand (énigmes et concept). ' +
+    html += '<footer class="home-foot"><p class="version"><b>' + esc(versionLabel()) + '</b>' + (PREVIEW ? ' · <span class="preview-tag">Aperçu ' + esc(PREVIEW.replace('pr-', 'PR #')) + '</span>' : '') + '</p>Murdoku est un jeu créé par Manuel Garand (énigmes et concept). ' +
       'Les illustrations des fiches originales sont de Manuel Garand, Valentyna Bezdushna et Eli Voisin ; le golf et les îles sont de Craig Wallander. ' +
       'Cette adaptation web en français est non officielle, réalisée pour un usage personnel : ' +
       'les visuels sont redessinés. Retrouve le jeu officiel sur <a href="https://murdoku.com" target="_blank" rel="noopener">murdoku.com</a>.</footer></main>';
