@@ -1,6 +1,6 @@
 /* Murdoku — portraits SVG générés (style plat « polaroïd » des fiches).
  * Visage sans traits avec ombrage en deux tons (thème classique),
- * ou visage cartoon avec yeux et sourire (thème famille).
+
  */
 (function (root) {
   'use strict';
@@ -69,7 +69,7 @@
     return '<g fill="rgba(255,255,255,.25)" stroke="#2b2838" stroke-width="2.4"><rect x="33" y="42" width="14" height="10" rx="4"/><rect x="53" y="42" width="14" height="10" rx="4"/></g><path d="M47 46 L53 46" stroke="#2b2838" stroke-width="2.4"/>';
   }
 
-  /** Portrait SVG complet. look = { skin, hair, hairColor, beard, beardColor, glasses, bg, shirt, family } */
+  /** Portrait SVG complet. look = { skin, hair, hairColor, beard, beardColor, glasses, bg, shirt } */
   function avatar(look, opts) {
     look = look || {};
     opts = opts || {};
@@ -78,13 +78,12 @@
     const hc = look.hairColor || '#4a3428';
     const bg = look.bg || '#9ab8d8';
     const shirt = look.shirt || '#5a6a9a';
-    const fam = !!look.family;
-    const stroke = fam ? ' stroke="' + O + '" stroke-width="2"' : '';
+    const stroke = '';
     let s = '<svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg" class="avatar" aria-hidden="true">';
     s += '<defs><clipPath id="' + id + 'h"><ellipse cx="50" cy="48" rx="19" ry="24"/></clipPath>' +
       '<clipPath id="' + id + 'f"><rect x="0" y="0" width="100" height="110"/></clipPath></defs>';
     s += '<g clip-path="url(#' + id + 'f)">';
-    s += '<rect width="100" height="110" fill="' + (fam && !opts.tile ? 'transparent' : bg) + '"/>';
+    s += '<rect width="100" height="110" fill="' + bg + '"/>';
     s += hairBack(look.hair, hc);
     // épaules / vêtement
     s += '<path d="M6 112 Q8 88 34 82 L66 82 Q92 88 94 112 Z" fill="' + shirt + '"' + stroke + '/>';
@@ -94,17 +93,9 @@
     // oreilles + tête
     s += '<ellipse cx="31" cy="50" rx="4" ry="6" fill="' + skin + '"' + stroke + '/><ellipse cx="69" cy="50" rx="4" ry="6" fill="' + skin + '"' + stroke + '/>';
     s += '<ellipse cx="50" cy="48" rx="19" ry="24" fill="' + skin + '"' + stroke + '/>';
-    if (!fam) {
-      // ombrage deux tons caractéristique (moitié droite plus sombre)
-      s += '<rect x="50" y="20" width="22" height="56" fill="rgba(60,30,20,.12)" clip-path="url(#' + id + 'h)"/>';
-      s += '<path d="M50 40 L52 56 L48 56" fill="none" stroke="rgba(60,30,20,.18)" stroke-width="1.5"/>';
-    } else {
-      s += '<g fill="' + O + '"><ellipse cx="43" cy="47" rx="2.6" ry="3.4"/><ellipse cx="57" cy="47" rx="2.6" ry="3.4"/></g>' +
-        '<path d="M38 40 Q43 37 47 40 M53 40 Q57 37 62 40" stroke="' + O + '" stroke-width="2" fill="none" stroke-linecap="round"/>' +
-        '<path d="M42 59 Q50 66 58 59" stroke="' + O + '" stroke-width="2.4" fill="#fff" stroke-linejoin="round"/>' +
-        '<ellipse cx="38" cy="55" rx="4" ry="2.4" fill="#f08a8a" opacity=".45"/><ellipse cx="62" cy="55" rx="4" ry="2.4" fill="#f08a8a" opacity=".45"/>' +
-        '<path d="M50 49 Q48 54 51 55" stroke="' + shade(skin, -0.35) + '" stroke-width="1.8" fill="none"/>';
-    }
+    // ombrage deux tons caractéristique (moitié droite plus sombre)
+    s += '<rect x="50" y="20" width="22" height="56" fill="rgba(60,30,20,.12)" clip-path="url(#' + id + 'h)"/>';
+    s += '<path d="M50 40 L52 56 L48 56" fill="none" stroke="rgba(60,30,20,.18)" stroke-width="1.5"/>';
     s += beard(look.beard, look.beardColor || hc, skin);
     s += hairFront(look.hair, hc);
     s += glasses(look.glasses);

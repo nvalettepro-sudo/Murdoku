@@ -11,8 +11,8 @@
   const DEEP_LIMIT = 48;
 
   // Types d'objets que l'on peut occuper par défaut (surchargés par l'énigme).
-  const DEFAULT_OCCUPIABLE = ['chair', 'carpet', 'bed', 'car', 'oil', 'crumbs', 'path', 'sand',
-    'door', 'window', 'framed', 'tee', 'flag', 'cart', 'house', 'paint', 'puddle'];
+  const DEFAULT_OCCUPIABLE = ['chair', 'carpet', 'bed', 'car', 'oil', 'path', 'sand',
+    'door', 'framed', 'tee', 'flag', 'cart', 'house', 'paint', 'puddle'];
 
   function baseType(t) { return t.split(':')[0]; }
 
@@ -628,17 +628,8 @@
     return m;
   }
 
-  /** Coupable selon la règle de l'énigme (meurtre classique ou règle « famille »). */
-  function culpritOf(P, sol) {
-    const g = P.def.culprit;
-    if (!g) return murdererOf(P, sol);
-    for (let i = 0; i < sol.length; i++) {
-      const k = sol[i];
-      if (g.onObject && P.objs[k].has(g.onObject)) return i;
-      if (g.row !== undefined && Math.floor(k / P.N) === g.row) return i;
-    }
-    return -1;
-  }
+  /** Le coupable est la personne seule avec la victime. */
+  function culpritOf(P, sol) { return murdererOf(P, sol); }
 
   /**
    * Candidats pour l'aide : pour chaque personne non placée, cases compatibles avec

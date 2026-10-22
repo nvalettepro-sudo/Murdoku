@@ -4,7 +4,6 @@
   original: 'The Zoo',
   difficulty: 'expert',
   order: 12,
-  theme: 'classic',
   palette: { diff: '#4aa86a', logo: 'dark', table: '#f6d878', bg1: '#e9f7d6', bg2: '#c6eba8', card: '#e9e3f7', card2: '#f6efcf', victim: '#f7cfdc', ink: '#1b2a1e', title: '#1d1d24', panel: '#c3ef9a', legendOk: '#d6f5c0', legendNo: '#f2b8a6', label: '#ffffff', titleDark: true },
   size: 16,
   victim: 'Vlad',

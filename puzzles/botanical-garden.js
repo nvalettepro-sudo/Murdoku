@@ -4,7 +4,6 @@
   original: 'The Botanical Garden',
   difficulty: 'difficile',
   order: 9,
-  theme: 'classic',
   palette: { table: '#f6e3a0', bg1: '#5f9f8a', bg2: '#4a8a5a', card: '#d9f0dc', card2: '#d9f0dc', victim: '#f3c9d5', ink: '#1b2a20', title: '#d9f0dc', panel: '#d9f0dc', legendOk: '#d9f0dc', legendNo: '#d9f0dc', label: '#ffffff' },
   size: 12,
   victim: 'Veronica',
