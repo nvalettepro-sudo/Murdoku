@@ -70,6 +70,7 @@
         '<path d="M20 70 L20 86 M80 70 L80 86" stroke="#6a7d86" stroke-width="5"/>', 3.5);
     },
     shelf: function (o) {
+      if (o.style === 'wood') return woodShelf();
       const c = o.v || C.shelf;
       let books = '';
       const cols = [C.book1, C.book2, C.book3, C.book2, C.book1];
@@ -134,10 +135,10 @@
     },
     tree: function (o) {
       const c = o.v || '#6fbf8f';
-      return shadow(50, 88, 30, 8) + g(
+      return '<g transform="translate(50 50) scale(1.12) translate(-50 -52)">' + shadow(50, 88, 30, 8) + g(
         '<rect x="44" y="72" width="12" height="14" fill="#7a5a50"/>' +
         '<path d="M50 6 C38 10 30 22 34 30 C22 34 18 46 24 52 C14 58 14 72 30 76 L70 76 C86 72 86 58 76 52 C82 46 78 34 66 30 C70 22 62 10 50 6 Z" fill="' + c + '"/>' +
-        '<path d="M34 30 C42 36 58 36 66 30 M24 52 C36 60 64 60 76 52" fill="none" stroke-width="3"/>', 3.2);
+        '<path d="M34 30 C42 36 58 36 66 30 M24 52 C36 60 64 60 76 52" fill="none" stroke-width="3"/>', 3.2) + '</g>';
     },
     snowtree: function () {
       return ICONS.tree({ v: '#ffffff' });
@@ -164,8 +165,9 @@
       return '<g transform="translate(' + (d === 'r' ? 100 : 0) + ',0)"><rect x="-7" y="16" width="14" height="68" rx="6"' + st + '/><rect x="-2.5" y="24" width="5" height="52" rx="2" fill="#ffffff"/></g>';
     },
     window: function () {
-      return '<g transform="translate(-4,0)">' + g('<rect x="0" y="10" width="16" height="80" rx="3" fill="#c9a0a0"/>' +
-        '<rect x="4" y="16" width="10" height="68" fill="#f6eed0" stroke-width="2.5"/><path d="M4 50 L14 50" stroke-width="2.5"/>', 3) + '</g>';
+      return '<g transform="translate(2,0)">' + g('<rect x="0" y="6" width="24" height="88" rx="3" fill="#a87a5a"/>' +
+        '<rect x="5" y="12" width="14" height="76" fill="#cfe9f4" stroke-width="2.5"/><path d="M5 50 L19 50 M12 12 L12 88" stroke-width="2.5"/>' +
+        '<path d="M7 20 L11 16 M7 58 L11 54" stroke="#ffffff" stroke-width="2"/>', 3) + '</g>';
     },
     box: function () {
       return shadow(50, 88, 36, 6) + g(
@@ -203,8 +205,9 @@
         flowerHead(44, 62, '#e05a6a') + flowerHead(62, 68, '#d84a5a') + flowerHead(26, 64, '#e05a6a');
     },
     lily: function () {
-      return g('<path d="M50 50 L86 40 A38 26 0 1 1 82 60 Z" fill="#4f9e5a"/>' +
-        '<path d="M50 50 L22 42 M50 50 L28 66 M50 50 L60 74" stroke="#2f6e3a" stroke-width="2.5"/>', 3.5);
+      return g('<path d="M50 52 L77.2 39.3 A30 30 0 1 0 77.2 64.7 Z" fill="#4f9e5a"/>' +
+        '<path d="M50 52 L30 38 M50 52 L28 64 M50 52 L50 80 M50 52 L50 24" stroke="#2f6e3a" stroke-width="2.2"/>', 3.2) +
+        '<ellipse cx="34" cy="40" rx="6" ry="3" fill="#ffffff" opacity=".45"/>';
     },
     statue: function () {
       return shadow(50, 90, 30, 6) + g(
@@ -332,6 +335,22 @@
         '<path d="M52 32 Q30 18 12 34 Q30 26 52 34 Q40 10 54 4 Q56 20 54 32 Q72 12 90 20 Q72 22 56 34 Q80 32 90 50 Q72 38 54 36 Q62 56 54 66 Q52 50 52 36 Q34 44 20 62 Q30 42 50 34 Z" fill="#6fc84a"/>', 2.5);
     }
   };
+
+  function woodShelf() {
+    const cols = ['#9a8ad8', '#e8e4f6', '#c46a8a', '#6a7ac8', '#e8c46a'];
+    let books = '';
+    [30, 54, 78].forEach(function (y, r) {
+      for (let i = 0; i < 5; i++) {
+        const h = 14 + ((i + r) % 3) * 2;
+        books += '<rect x="' + (20 + i * 12) + '" y="' + (y - h) + '" width="10" height="' + h + '" fill="' + cols[(i * 2 + r) % 5] + '" stroke-width="1.6"/>';
+      }
+    });
+    return shadow(50, 90, 36, 6) + g(
+      '<rect x="12" y="6" width="76" height="84" rx="3" fill="#a07a52"/>' +
+      '<rect x="17" y="11" width="66" height="74" fill="#5a4030" stroke-width="2.5"/>' + books +
+      '<path d="M17 31 L83 31 M17 55 L83 55 M17 79 L83 79" stroke="#a07a52" stroke-width="5"/>' +
+      '<path d="M17 31 L83 31 M17 55 L83 55 M17 79 L83 79" stroke-width="1.5"/>', 3);
+  }
 
   function flowerHead(x, y, c, center) {
     let s = '';

@@ -5,7 +5,7 @@
   difficulty: 'facile',
   order: 3,
   theme: 'family',
-  palette: { logo: 'dark', bg1: '#e6efd9', bg2: '#d4e3c4', card: '#fdf7e4', card2: '#fdf7e4', victim: '#fdf7e4', ink: '#2c2420', title: '#1d1d1d', panel: '#f3dd8f', legendOk: '#d2e8c9', legendNo: '#ead2b4', label: '#fffbe9' },
+  palette: { shelf: 'wood', logo: 'dark', bg1: '#e6efd9', bg2: '#d4e3c4', card: '#fdf7e4', card2: '#fdf7e4', victim: '#fdf7e4', ink: '#2c2420', title: '#1d1d1d', panel: '#f3dd8f', legendOk: '#d2e8c9', legendNo: '#ead2b4', label: '#fffbe9' },
   size: 7,
   victim: null,
   culprit: { row: 0 },

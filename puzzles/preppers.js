@@ -5,7 +5,7 @@
   difficulty: 'moyen',
   order: 7,
   theme: 'classic',
-  palette: { table: '#c9ad84', bg1: '#9aa64a', bg2: '#4a4f62', card: '#ecdcbc', card2: '#e3eccd', victim: '#f6cfdb', ink: '#24221c', title: '#f6efc6', panel: '#f1e7d0', legendOk: '#e3ecc8', legendNo: '#e6caa6', label: '#ffffff' },
+  palette: { shelf: 'wood', table: '#c9ad84', bg1: '#9aa64a', bg2: '#4a4f62', card: '#ecdcbc', card2: '#e3eccd', victim: '#f6cfdb', ink: '#24221c', title: '#f6efc6', panel: '#f1e7d0', legendOk: '#e3ecc8', legendNo: '#e6caa6', label: '#ffffff' },
   size: 9,
   victim: 'Vivianna',
   intro: 'Vivianna a été assassinée ! Sauras-tu trouver le coupable ?',

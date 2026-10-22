@@ -5,7 +5,7 @@
   difficulty: 'moyen',
   order: 6,
   theme: 'classic',
-  palette: { diff: '#b49a9a', table: '#e8a08a', bg1: '#fbefc8', bg2: '#ead6b0', card: '#fdf3d8', card2: '#ead7f3', victim: '#f7d2dc', ink: '#2c2420', title: '#9a7f7a', panel: '#fdf6e0', legendOk: '#c4b6dc', legendNo: '#d9a39a', label: '#ffffff', logo: 'pastel' },
+  palette: { shelf: 'wood', diff: '#b49a9a', table: '#e8a08a', bg1: '#fbefc8', bg2: '#ead6b0', card: '#fdf3d8', card2: '#ead7f3', victim: '#f7d2dc', ink: '#2c2420', title: '#9a7f7a', panel: '#fdf6e0', legendOk: '#c4b6dc', legendNo: '#d9a39a', label: '#ffffff', logo: 'pastel' },
   size: 9,
   victim: 'Veronica',
   intro: 'Veronica a été assassinée ! Sauras-tu trouver le coupable ?',

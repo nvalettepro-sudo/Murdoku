@@ -235,9 +235,21 @@
     // icônes triées par rangée (les objets du bas recouvrent ceux du haut)
     icons.sort(function (a, b) { return Math.min.apply(null, a.cells.map(function (x) { return x[0]; })) - Math.min.apply(null, b.cells.map(function (x) { return x[0]; })); });
     const edgeIcons = icons.filter(function (p) { return p.type === 'door' || p.type === 'window'; });
-    icons.filter(function (p) { return edgeIcons.indexOf(p) < 0; }).forEach(function (p) { out += placeIcon(p, s); });
+    const shelfStyle = pal.shelf || null;
+    icons.filter(function (p) { return edgeIcons.indexOf(p) < 0; }).forEach(function (p) {
+      out += placeIcon(shelfStyle && p.type === 'shelf' ? Object.assign({}, p, { style: shelfStyle }) : p, s);
+    });
     out += '<path d="' + walls + '" stroke="' + O + '" stroke-width="' + wall + '" stroke-linecap="square"/>';
     edgeIcons.forEach(function (p) { out += placeIcon(p, s); });
+    // décor : tableau noir accroché au mur du haut (salle de classe)
+    if (def.decor === 'chalkboard') {
+      const x0 = s * 1.4, x1 = S - s * 1.4, h = s * 0.42;
+      out += '<g><rect x="' + x0 + '" y="' + (-PAD / 2) + '" width="' + (x1 - x0) + '" height="' + h + '" rx="4" fill="#8a5a3a" stroke="' + O + '" stroke-width="4"/>' +
+        '<rect x="' + (x0 + 8) + '" y="' + (-PAD / 2 + 6) + '" width="' + (x1 - x0 - 16) + '" height="' + (h - 16) + '" fill="#2f4a3a"/>' +
+        '<path d="M' + (x0 + s * 1.2) + ' ' + (h * 0.45) + ' q' + s * 0.3 + ' -' + h * 0.3 + ' ' + s * 0.6 + ' 0 t' + s * 0.6 + ' 0" stroke="#f0f0e8" stroke-width="3" fill="none" opacity=".85"/>' +
+        '<circle cx="' + (S / 2) + '" cy="' + h * 0.35 + '" r="' + h * 0.22 + '" fill="none" stroke="#f0f0e8" stroke-width="3" opacity=".85"/>' +
+        '<rect x="' + (S * 0.66) + '" y="' + (h - 12) + '" width="' + s * 0.5 + '" height="7" rx="2" fill="#f0f0e8" stroke="' + O + '" stroke-width="2"/></g>';
+    }
     // cadre extérieur
     out += '<rect x="' + (-PAD / 2) + '" y="' + (-PAD / 2) + '" width="' + (S + PAD) + '" height="' + (S + PAD) + '" fill="none" stroke="' + O + '" stroke-width="' + PAD + '" rx="3"/>';
     // étiquettes de zones

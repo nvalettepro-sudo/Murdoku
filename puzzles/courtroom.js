@@ -5,7 +5,7 @@
   difficulty: 'facile',
   order: 5,
   theme: 'classic',
-  palette: { table: '#6a5274', bg1: '#6a5a7a', bg2: '#4a3a5a', card: '#d8e8f5', card2: '#f5ecd2', victim: '#f6cfdb', ink: '#24202c', title: '#f6eef6', panel: '#cdc0bc', legendOk: '#8ac4b0', legendNo: '#c49ac4', label: '#ffffff' },
+  palette: { shelf: 'wood', table: '#6a5274', bg1: '#6a5a7a', bg2: '#4a3a5a', card: '#d8e8f5', card2: '#f5ecd2', victim: '#f6cfdb', ink: '#24202c', title: '#f6eef6', panel: '#cdc0bc', legendOk: '#8ac4b0', legendNo: '#c49ac4', label: '#ffffff' },
   size: 9,
   victim: 'Vanessa',
   intro: 'Vanessa a été assassinée ! Sauras-tu trouver le coupable ?',
