@@ -4,7 +4,6 @@
   original: 'Car Repair',
   difficulty: 'facile',
   order: 2,
-  theme: 'classic',
   palette: { table: '#5f6385', bg1: '#5f9292', bg2: '#3b3f86', card: '#d4f1f3', card2: '#ddd8f7', victim: '#f3c9d5', ink: '#20233a', title: '#fff4c2', panel: '#d8f3f5', legendOk: '#bcd9f2', legendNo: '#d3c8f0', label: '#ffffff' },
   size: 6,
   victim: 'Vaughn',

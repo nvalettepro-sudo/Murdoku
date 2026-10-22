@@ -22,7 +22,6 @@ async function tapCell(page, N, r, c) {
 async function play(browser, ctxOpts, id, label) {
   const def = loadDef(id);
   const ctx = await browser.newContext(ctxOpts);
-  await ctx.addInitScript(() => { try { localStorage.setItem('murdoku:v1:seenHelp', 'true'); } catch (e) {} });
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -32,12 +31,10 @@ async function play(browser, ctxOpts, id, label) {
   // pose des pions selon la solution
   const sol = def.solution.split(' ').map(t => { const [n, rc] = t.split(':'); const [r, c] = rc.split(',').map(Number); return { n, r, c }; });
   // une croix d'abord (appui long simulé par l'outil Croix), puis effacement
-  await page.click('[data-tool="cross"]');
-  await tapCell(page, def.size, sol[0].r, sol[0].c); // case occupable (celle d'un suspect dans la solution)
+  await tapCell(page, def.size, sol[0].r, sol[0].c); // case vide occupable : une croix se pose
   const crosses = await page.evaluate(() => JSON.parse(localStorage.getItem('murdoku:v1:p:' + location.hash.split('/')[2])).crosses);
   if (!Object.keys(crosses).length) errors.push('croix non posée');
   await page.click('[data-act="undo"]');
-  await page.click('[data-tool="cross"]'); // interrupteur : retour au mode normal
   // brouillon : un même suspect posé sur deux cases, puis effacé par Annuler
   const p0 = sol[0], i0 = def.people.findIndex(q => q.name === p0.n);
   await page.click('[data-tool="draft"]');
@@ -89,7 +86,7 @@ async function play(browser, ctxOpts, id, label) {
   const ipad = { viewport: { width: 1180, height: 820 }, hasTouch: false, deviceScaleFactor: 1 };
   const ipadPortrait = { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1 };
   const pc = { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 };
-  const ids = (process.env.IDS || 'cookie-thief,car-repair,caricature,golf-course,zoo').split(',');
+  const ids = (process.env.IDS || 'netflix-and-kill,car-repair,courtroom,golf-course,zoo').split(',');
   let ok = true;
   for (const id of ids) {
     ok = (await play(browser, ipad, id, 'ipad-paysage')) && ok;

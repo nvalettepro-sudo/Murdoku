@@ -113,15 +113,14 @@
     cur = null;
     document.body.style.setProperty('--bg1', '#5f9292');
     document.body.style.setProperty('--bg2', '#3b3f86');
-    document.title = 'Murdoku — Énigmes criminelles';
-    const groups = [
-      { title: 'Version famille', items: PUZZLES.filter(function (p) { return p.theme === 'family'; }) },
-      { title: 'Enquêtes classiques', items: PUZZLES.filter(function (p) { return p.theme !== 'family'; }) }
-    ];
+    document.title = 'Murdoku — Menu';
+    const groups = [{ title: 'Les enquêtes', items: PUZZLES }];
     let html = '<main class="home"><header class="home-head"><div>' + logoSvg() +
       '<p>Lis les indices, place chaque suspect sur la scène de crime… et démasque le meurtrier.</p></div>' +
       '<div class="home-actions"><button class="pill-btn" data-act="rules">' + UI.help + 'Comment jouer</button>' +
-      '<button class="pill-btn" data-act="settings">' + UI.gear + 'Options</button></div></header>';
+      '<button class="pill-btn" data-act="settings">' + UI.gear + 'Options</button></div></header>' +
+      '<section class="home-section howto"><h2>Comment jouer en 3 gestes</h2><div class="steps">' + stepsHtml() + '</div>' +
+      '<p class="more">Toutes les règles du jeu et les astuces de l’application : <button class="link-btn" data-act="rules2">Comment jouer</button></p></section>';
     groups.forEach(function (g) {
       if (!g.items.length) return;
       html += '<section class="home-section"><h2>' + g.title + '</h2><div class="puzzle-grid">';
@@ -146,13 +145,27 @@
       'les visuels sont redessinés. Retrouve le jeu officiel sur <a href="https://murdoku.com" target="_blank" rel="noopener">murdoku.com</a>.</footer></main>';
     app.innerHTML = html;
     app.querySelector('[data-act="rules"]').addEventListener('click', showRules);
+    app.querySelector('[data-act="rules2"]').addEventListener('click', showRules);
     app.querySelector('[data-act="settings"]').addEventListener('click', showSettings);
+    B.fitLabels(app);
+  }
+
+  // Les 3 gestes de base (affichés sur le Menu)
+  function stepsHtml() {
+    const items = [
+      ['1', 'Place', 'Touche un suspect, puis la case où il se trouvait. Touche son pion pour le retirer.'],
+      ['2', 'Élimine', 'Touche une case vide pour la marquer d’une croix, ou glisse le doigt pour en tracer plusieurs. Des croix claires se posent aussi toutes seules.'],
+      ['3', 'Hésite', 'Active Brouillon pour poser un suspect sur plusieurs cases possibles. Appui long sur une vignette pour la valider.']
+    ];
+    return items.map(function (it) {
+      return '<div class="step"><span class="n">' + it[0] + '</span><div><h3>' + it[1] + '</h3><p>' + it[2] + '</p></div></div>';
+    }).join('');
   }
 
   function thumbSvg(def) {
     try {
       const P = getP(def);
-      return '<svg viewBox="-16 -16 1032 1032" xmlns="http://www.w3.org/2000/svg">' + B.staticLayer(P, def.theme) + '</svg>';
+      return '<svg viewBox="-16 -16 1032 1032" xmlns="http://www.w3.org/2000/svg">' + B.staticLayer(P) + '</svg>';
     } catch (e) {
       return '';
     }
@@ -203,7 +216,6 @@
     document.title = def.title + ' — Murdoku';
     buildStage();
     startTimer();
-    setTimeout(showFirstHelp, 300);
   }
 
   const LOGOS = {
@@ -233,21 +245,19 @@
       L.notes = [sb[0], sb[1] + sb[3] - nh, sb[2], nh];
     }
     cur.L = L;
-    const fam = def.theme === 'family';
     const pal = def.palette || {};
-    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + ' theme-' + (def.theme || 'classic') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + '">';
+    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + '">';
     // en-tête
     const h1 = def.title.length > 22 ? 30 : def.title.length > 15 ? 35 : 42;
-    html += '<header class="region brand" style="' + box(L.brand) + ';--h1:' + h1 + 'px">' + (fam ? '<span class="family-tag">FAMILY</span>' : '') + logoSvg() +
-      (fam ? '<span class="family-sub">version famille</span>' : '') +
-      '<h1>' + esc(def.title) + '</h1>' + (fam ? '' : '<div class="diff">difficulté : ' + esc(def.difficulty) + '</div>') + '</header>';
+    html += '<header class="region brand" style="' + box(L.brand) + ';--h1:' + h1 + 'px">' + logoSvg() +
+      '<h1>' + esc(def.title) + '</h1><div class="diff">difficulté : ' + esc(def.difficulty) + '</div></header>';
     // bulles de règles
     html += '<section class="region rules3" style="' + box(L.rules3) + '">' + rulesBubbles(def) + '</section>';
     // légende
     html += '<section class="region legend" style="' + box(L.legend) + '">' + legendHtml(P) + '</section>';
     // plateau
     html += '<section class="region boardbox" style="' + box(L.board) + '"><svg class="board" viewBox="' + (-B.PAD) + ' ' + (-B.PAD) + ' ' + (B.SIZE + 2 * B.PAD) + ' ' + (B.SIZE + 2 * B.PAD) + '" xmlns="http://www.w3.org/2000/svg" role="grid" aria-label="Scène de crime">' +
-      '<g class="static">' + B.staticLayer(P, def.theme) + '</g><g class="dyn"></g></svg></section>';
+      '<g class="static">' + B.staticLayer(P) + '</g><g class="dyn"></g></svg></section>';
     // suspects
     html += '<section class="region suspects" style="' + box(L.suspects) + '" aria-label="Suspects"></section>';
     html += '<section class="region detail" style="' + box(L.detail) + '" aria-live="polite"></section>';
@@ -258,12 +268,12 @@
     }
     // outils
     html += '<section class="region toolbar" style="' + box(L.toolbar) + '">' +
-      toolBtn('cross', 'Croix', UI.cross) + toolBtn('draft', 'Brouillon', UI.pencil) +
+      toolBtn('draft', 'Brouillon', UI.pencil) +
       actBtn('undo', 'Annuler', UI.undo, 'sep') + actBtn('redo', 'Rétablir', UI.redo) +
       actBtn('hint', 'Indice', UI.hint, 'sep') + actBtn('check', 'Vérifier', UI.check) + actBtn('reset', 'Effacer', UI.reset) +
       (settings.timer && cur.orient === 'landscape' ? '<span class="timer" aria-label="Temps">' + fmtTime(cur.st.time) + '</span>' : '') + '</section>';
     html += '<section class="region culprit" style="' + box(L.culprit) + '" role="button" tabindex="0"></section>';
-    html += '<nav class="region topbtns" style="' + box(L.topbtns) + '">' + actBtn('home', 'Énigmes', UI.grid) + actBtn('rules', 'Règles', UI.help) + actBtn('settings', 'Options', UI.gear) + '</nav>';
+    html += '<nav class="region topbtns" style="' + box(L.topbtns) + '">' + actBtn('home', 'Menu', UI.grid) + actBtn('rules', 'Règles', UI.help) + actBtn('settings', 'Options', UI.gear) + '</nav>';
     html += '</div></div>';
     app.innerHTML = html;
     cur.stage = app.querySelector('.stage');
@@ -274,6 +284,7 @@
     renderAll();
     fitStage();
     bindStage();
+    B.fitLabels(cur.svg);
   }
 
   function toolBtn(id, label, icon) {
@@ -284,18 +295,14 @@
   }
 
   function rulesBubbles(def) {
-    const victim = def.victim ? def.people.find(function (p) { return p.name === def.victim; }) : null;
-    const fam = def.theme === 'family';
     const b1 = '<div class="bubble"><span class="num">1</span><h3>' + md(def.intro || '') + '</h3>' +
-      '<p>' + (fam ? '' : 'Lis l’indice de chaque suspect et retrouve sa position exacte sur la scène de crime.') + '</p>' +
-      '<p class="goal">' + (def.goalText ? md(def.goalText) : 'Le <b>meurtrier</b> était <b>seul avec la victime</b>, dans la même zone.') + '</p>' +
-      (def.note ? '<p class="goal"><b>Note :</b> ' + md(def.note) + '</p>' : '') + '</div>';
-    void victim;
-    const b2 = '<div class="bubble"><span class="num">2</span><h3>Règle : une personne par rangée et par colonne</h3>' +
-      '<div class="mini"><figure>' + miniGrid(false) + 'dès que tu places quelqu’un…</figure><figure>' + miniGrid(true) + '…bloque toute sa <span style="color:#3a5ab8">rangée</span> et sa <span style="color:#3a5ab8">colonne</span></figure></div></div>';
+      '<p>Lis les indices et place chaque suspect. Le <b>meurtrier</b> était <b>seul avec la victime</b>, dans la même zone.</p>' +
+      (def.note ? '<p class="note-line"><b>Note :</b> ' + md(def.note) + '</p>' : '') + '</div>';
+    const b2 = '<div class="bubble"><span class="num">2</span><h3>Une personne par rangée et par colonne</h3>' +
+      '<div class="mini"><figure>' + miniGrid(false) + 'quand tu places quelqu’un…</figure><figure>' + miniGrid(true) + '…sa rangée et sa colonne sont bloquées</figure></div></div>';
     const b3 = '<div class="bubble"><span class="num">3</span><h3>Que veut dire « à côté » ?</h3>' +
-      '<p style="font-size:14px">à gauche, à droite, au-dessus ou en dessous de quelque chose, et dans la même zone</p>' +
-      '<div class="mini3"><span>sont<br>à côté<br>du ●</span>' + miniBeside() + '<span class="no">✕ ne sont<br>pas à côté<br>du ●</span></div></div>';
+      '<div class="b3">' + miniBeside() + '<div class="b3txt"><p>À gauche, à droite, au-dessus ou en dessous, <b>dans la même zone</b>.</p>' +
+      '<p class="key"><span class="ok">Silhouette</span> : à côté du ●<br><span class="no">✕</span> : pas à côté</p></div></div></div>';
     return b1 + b2 + b3;
   }
 
@@ -308,7 +315,7 @@
     }
     g += '<path d="M' + s + ' ' + 3 * s + ' V' + 2 * s + ' H' + 2 * s + ' V' + s + ' H' + 3 * s + '" fill="none" stroke="' + o + '" stroke-width="4"/>';
     g += '<rect x="0" y="0" width="' + 3 * s + '" height="' + 3 * s + '" fill="none" stroke="' + o + '" stroke-width="4"/>';
-    g += '<circle cx="' + 2.5 * s + '" cy="' + 0.5 * s + '" r="9" fill="#fff" stroke="' + o + '" stroke-width="2"/><text x="' + 2.5 * s + '" y="' + (0.5 * s + 4.5) + '" text-anchor="middle" font-size="12" font-weight="800" font-family="Rubik, sans-serif" fill="' + o + '">A</text>';
+    g += '<circle cx="' + 2.5 * s + '" cy="' + 0.5 * s + '" r="9" fill="#fff" stroke="' + o + '" stroke-width="2"/><text x="' + 2.5 * s + '" y="' + (0.5 * s + 4.5) + '" text-anchor="middle" font-size="12" font-weight="800" font-family="Montserrat, system-ui, sans-serif" fill="' + o + '">A</text>';
     if (blocked) {
       [[0, 0], [0, 1], [1, 2], [2, 2]].forEach(function (rc) {
         const x = rc[1] * s, y = rc[0] * s, m = 7;
@@ -383,7 +390,6 @@
     box2.innerHTML = P.people.map(function (p, i) {
       const isV = i === P.victim;
       return '<button class="card' + (isV ? ' victim' : '') + '" data-i="' + i + '" aria-label="' + esc(p.name) + '">' +
-        (p.quote ? '<span class="quote">' + esc(p.quote) + '</span>' : '') +
         '<span class="polaroid"><span class="photo">' + A.avatar(p.look, { victim: isV }) + '</span><span class="name' + (p.name.length >= 8 ? ' long' : '') + '">' + esc(p.name) + '</span></span>' +
         '<span class="clue">' + (p.tag ? '<i class="tag ' + (p.role || '') + '">' + esc(p.tag) + '</i>' : '') + md(p.clue || '') + '</span>' +
         '<span class="badge" style="background:' + B.pawnColor(P, i) + '">' + esc(p.name[0]) + '</span></button>';
@@ -397,9 +403,8 @@
     const box2 = cur.stage.querySelector('.suspects');
     const L = cur.L || LAYOUT[cur.orient];
     const n = cur.P.people.length;
-    const fam = cur.def.theme === 'family';
     const W = L.suspects[2], H = L.suspects[3];
-    const cap = fam ? 19 : 21;
+    const cap = 21;
     function measure(mode) {
       box2.classList.toggle('compact', mode === 'compact');
       box2.classList.toggle('horiz', mode === 'horiz');
@@ -420,12 +425,12 @@
     }
     const minFs = cur.orient === 'portrait' ? 13.5 : 12.5;
     let best = measure('vert');
-    if (best.fs < 15 && !fam) {
+    if (best.fs < 15) {
       const hz = measure('horiz');
       if (hz.fs > best.fs) best = hz;
     }
     if (best.fs < minFs) best = measure('compact');
-    const fs = Math.min(best.fs, fam ? 19 : 21);
+    const fs = Math.min(best.fs, 21);
     box2.classList.toggle('compact', best.mode === 'compact');
     box2.classList.toggle('horiz', best.mode === 'horiz');
     box2.style.setProperty('--fs', fs.toFixed(2) + 'px');
@@ -461,7 +466,8 @@
   // Les polices web peuvent arriver après le premier rendu : on réajuste alors les prénoms.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () {
-      if (cur && cur.stage) fitNames(cur.stage.querySelector('.suspects'));
+      if (cur && cur.stage) { fitNames(cur.stage.querySelector('.suspects')); B.fitLabels(cur.svg); }
+      else B.fitLabels(app);
     });
   }
 
@@ -473,7 +479,7 @@
       det.innerHTML = '<span class="txt">Touche un suspect pour lire son indice, puis une case pour le placer.</span>';
     } else {
       const p = cur.P.people[i];
-      det.innerHTML = '<span class="who">' + esc(p.name) + '</span><span class="txt">' + md(p.clue || '') + (p.quote ? ' <i style="color:#7a7060">« ' + esc(p.quote) + ' »</i>' : '') + '</span>';
+      det.innerHTML = '<span class="who">' + esc(p.name) + '</span><span class="txt">' + md(p.clue || '') + '</span>';
     }
     det.classList.add('show');
   }
@@ -510,25 +516,21 @@
     cur.dyn.innerHTML = B.dynamicLayer(cur.P, {
       pos: st.pos, crosses: st.crosses, notes: st.notes, autoCross: settings.autoCross && !st.solved, hover: cur.hover,
       highlight: cur.highlight, marks: cur.marks, selected: cur.selected, solved: st.solved, culprit: culprit,
-      crossColor: cur.def.theme === 'family' ? '#c0392b' : '#33335f',
-      autoCrossColor: cur.def.theme === 'family' ? '#e0a49c' : '#97a0c6'
+      crossColor: '#33335f',
+      autoCrossColor: '#97a0c6'
     });
     cur.svg.classList.toggle('solved', !!st.solved);
   }
 
   function renderCulprit() {
     const el = cur.stage.querySelector('.culprit');
-    const def = cur.def;
-    const q = def.culpritQuestion || 'Le meurtrier est…';
     let name = '';
     if (cur.st.solved) {
       const c = E.culpritOf(cur.P, cur.st.pos);
       name = c >= 0 ? cur.P.people[c].name : '';
     }
     el.classList.toggle('found', !!name);
-    el.classList.toggle('has-hint', !!def.culpritHint);
-    el.innerHTML = '<span class="q">' + esc(q) + '</span><span class="line">' + esc(name) + '</span>' +
-      (def.culpritHint ? '<span class="hint">' + esc(def.culpritHint) + '</span>' : '');
+    el.innerHTML = '<span class="q">Le meurtrier est…</span><span class="line">' + esc(name) + '</span>';
   }
 
   function updateButtons() {
@@ -537,7 +539,6 @@
     if (r) r.disabled = !cur.future.length;
     cur.stage.querySelectorAll('[data-tool]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.tool === cur.tool); });
     cur.stage.classList.toggle('mode-draft', cur.tool === 'draft');
-    cur.stage.classList.toggle('mode-cross', cur.tool === 'cross');
   }
 
   // ---------- mise à l'échelle ----------
@@ -712,7 +713,6 @@
 
   function selectPerson(i) {
     cur.selected = cur.selected === i ? -1 : i;
-    if (cur.tool === 'cross') cur.tool = 'normal';
     renderAll();
   }
 
@@ -838,7 +838,6 @@
       b.addEventListener('click', function () {
         // Croix et Brouillon sont des interrupteurs : un second appui revient au mode normal
         cur.tool = cur.tool === b.dataset.tool ? 'normal' : b.dataset.tool;
-        if (cur.tool === 'cross') cur.selected = -1;
         if (cur.tool === 'draft') toast('Brouillon : choisis un suspect, puis touche toutes les cases possibles. Appui long sur une vignette pour la valider.', 4200);
         renderAll();
       });
@@ -915,14 +914,23 @@
       }
       if (k < 0 || k === gest.last) return;
       gest.last = k; gest.moved = true;
-      if (gest.tool === 'cross') { if (setCross(k, gest.on)) renderBoard(); }
-      else if (gest.timer) { clearTimeout(gest.timer); }
+      if (gest.tool === 'cross') { if (setCross(k, gest.on)) renderBoard(); return; }
+      if (gest.timer) { clearTimeout(gest.timer); gest.timer = null; }
+      // glissé sur des cases vides, sans suspect sélectionné : on trace des croix en série
+      if (!gest.paint && gest.tool === 'normal' && cur.selected < 0 && !cur.st.solved && cur.st.pos.indexOf(gest.k) < 0) {
+        gest.paint = true;
+        pushHistory();
+        gest.on = !cur.st.crosses[gest.k];
+        setCross(gest.k, gest.on);
+      }
+      if (gest.paint && setCross(k, gest.on)) renderBoard();
+      else if (gest.paint) renderBoard();
     });
     function end(e) {
       if (!gest) return;
       const g = gest; gest = null;
       if (g.timer) clearTimeout(g.timer);
-      if (g.tool === 'cross') { changed(); return; }
+      if (g.tool === 'cross' || g.paint) { changed(); return; }
       if (g.done) return;
       const k = cellFromEvent(e);
       if (k >= 0 && k === g.k) tapCell(k);
@@ -943,8 +951,7 @@
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (k === 'Escape') { cur.selected = -1; cur.highlight = []; renderAll(); return; }
     if (k === '1') { cur.tool = 'normal'; renderAll(); return; }
-    if (k === '2') { cur.tool = 'cross'; cur.selected = -1; renderAll(); return; }
-    if (k === '3') { cur.tool = 'draft'; renderAll(); return; }
+    if (k === '2') { cur.tool = 'draft'; renderAll(); return; }
     if (k === '?') { doHint(); return; }
     if (/^[a-zA-Z]$/.test(k)) {
       const i = cur.P.people.findIndex(function (p) { return p.name[0].toLowerCase() === k.toLowerCase(); });
@@ -998,9 +1005,8 @@
     const p = c >= 0 ? P.people[c] : null;
     const idx = PUZZLES.indexOf(def);
     const next = PUZZLES[idx + 1];
-    const fam = def.theme === 'family';
-    const m = openModal('<div class="win"><h2>' + (fam ? 'Le coupable est démasqué !' : 'Le meurtrier a été démasqué !') + '</h2>' +
-      '<p>Voici où se trouvait chaque personne. ' + esc(def.culpritQuestion || 'Le meurtrier est…') + '</p>' +
+    const m = openModal('<div class="win"><h2>Le meurtrier a été démasqué !</h2>' +
+      '<p>Voici où se trouvait chaque personne. Le meurtrier est…</p>' +
       (p ? '<div class="portrait">' + A.avatar(p.look) + '</div><div class="big">' + esc(p.name) + '</div>' : '') +
       '<p>Temps : <b>' + fmtTime(cur.st.time) + '</b></p><div class="actions">' +
       '<button class="pill-btn" data-x="see">Voir la grille</button>' +
@@ -1020,10 +1026,7 @@
     const m = openModal('<h2>Options</h2>' + rows.map(function (r) {
       return '<div class="row"><div><b>' + r[1] + '</b><br><span style="font-size:15px;color:#666">' + r[2] + '</span></div>' +
         '<label class="switch"><input type="checkbox" data-k="' + r[0] + '"' + (settings[r[0]] ? ' checked' : '') + ' aria-label="' + esc(r[1]) + '"><span></span></label></div>';
-    }).join('') + '<h3>Commandes</h3>' +
-      gesturesHtml() +
-      '<ul><li><b>Clavier :</b> initiale d’un suspect pour le sélectionner, 1 = normal, 2 = Croix, 3 = Brouillon, Ctrl+Z pour annuler, ? pour un indice.</li></ul>' +
-      '<h3>Progression</h3><p><button class="pill-btn" data-x="wipe">Effacer toute ma progression</button></p>' +
+    }).join('') + '<h3>Progression</h3><p><button class="pill-btn" data-x="wipe">Effacer toute ma progression</button></p>' +
       '<h3>' + esc(versionLabel()) + '</h3><ul class="history">' + VER.HISTORY.map(function (h2) {
         return '<li><b>' + esc(h2.v) + '</b> (' + esc(frDate(h2.d)) + ') : ' + esc(h2.t) + '</li>';
       }).join('') + '</ul>');
@@ -1042,31 +1045,33 @@
     });
   }
 
-  function gesturesHtml() {
-    return '<ol class="gestures">' +
-      '<li><b>Placer</b> : touche un suspect, puis sa case. Touche le pion pour le sélectionner, puis encore pour le retirer.</li>' +
-      '<li><b>Croix</b> : touche une case vide (ou appui long, ou clic droit) pour la marquer impossible. Le bouton <b>Croix</b> permet d\u2019en tracer plusieurs en glissant le doigt. Les croix claires sont posées automatiquement autour des suspects placés.</li>' +
-      '<li><b>Brouillon</b> : active le bouton, choisis un suspect et touche toutes ses cases possibles : des vignettes apparaissent, autant que tu veux. <b>Appui long</b> sur une vignette pour la transformer en vrai pion.</li></ol>';
-  }
-
-  function showFirstHelp() {
-    if (load('seenHelp', false)) return;
-    save('seenHelp', true);
-    const m = openModal('<h2>Comment jouer en 3 gestes</h2>' + gesturesHtml() +
-      '<div class="win"><div class="actions"><button class="pill-btn btn-primary" data-x="ok">C\u2019est parti !</button></div></div>');
-    m.querySelector('[data-x="ok"]').addEventListener('click', closeModal);
-  }
-
   function showRules() {
+    function pair(title, rule, screen) {
+      return '<h3>' + title + '</h3><p class="pair"><span class="tag">Règle</span>' + rule + '</p>' +
+        '<p class="pair"><span class="tag app">Sur l’écran</span>' + screen + '</p>';
+    }
     openModal('<h2>Comment jouer</h2>' +
       '<p>Un meurtre a été commis ! Chaque énigme est une <b>scène de crime</b> vue de dessus, découpée en <b>zones</b> (pièces, jardins, trous de golf…). ' +
-      'Chaque suspect donne un <b>indice</b>. Ton but : retrouver la <b>case exacte</b> de chaque personne, victime comprise, puis démasquer le coupable.</p>' +
-      '<h3>Les règles</h3><ol>' +
-      '<li><b>Une personne par rangée et par colonne.</b> Dès que tu places quelqu’un, toute sa rangée et toute sa colonne sont bloquées.</li>' +
-      '<li><b>Chaque indice est vrai.</b> Traite-le comme une règle, pas comme une simple piste.</li>' +
-      '<li><b>Le plan est une preuve.</b> Certains objets peuvent être occupés (chaise, tapis, lit, voiture…), d’autres non (table, étagère, plante, arbre…). La légende de chaque énigme les précise.</li>' +
-      '<li><b>Le meurtrier était seul avec la victime</b>, dans la même zone. On le trouve à la fin, une fois tout le monde placé.</li></ol>' +
-      '<h3>Que veut dire « à côté » ?</h3><p>À gauche, à droite, au-dessus ou en dessous (jamais en diagonale), <b>et dans la même zone</b>. Deux cases qui se touchent de part et d’autre d’un mur ne sont pas « à côté ».</p>' +
+      'Chaque suspect donne un <b>indice</b>. Ton but : retrouver la <b>case exacte</b> de chaque personne, victime comprise, puis démasquer le meurtrier.</p>' +
+      pair('1. Placer les suspects',
+        'Chaque personne occupe une case. <b>Une seule personne par rangée et par colonne.</b>',
+        'Touche la fiche d’un suspect, puis la case voulue : son pion apparaît avec son visage et son initiale. Touche le pion pour le sélectionner, puis encore pour le retirer. Si la rangée ou la colonne est déjà prise, un message te le dit.') +
+      pair('2. Éliminer des cases',
+        'Dès qu’un suspect est placé, sa rangée et sa colonne sont interdites à tous les autres.',
+        'Des <b>croix claires</b> se posent toutes seules (réglable dans Options). Pose les tiennes, en foncé : touche une case vide, ou fais un appui long ou un clic droit. Pour en tracer plusieurs, <b>glisse le doigt</b> sur les cases vides. Touche une croix pour l’enlever.') +
+      pair('3. Lire le plan',
+        'Le plan est une preuve. Certains objets peuvent être occupés (chaise, tapis, lit, voiture…), d’autres non (table, étagère, plante, arbre…). <b>« À côté »</b> veut dire à gauche, à droite, au-dessus ou en dessous, jamais en diagonale, <b>et dans la même zone</b>.',
+        'La légende au-dessus du plan classe les objets de chaque énigme. Si tu poses un pion sur un objet interdit, un message nomme l’objet. Les objets n’ont jamais de croix.') +
+      pair('4. Poser des hypothèses',
+        'Chaque indice est vrai : traite-le comme une règle. Quand deux cases restent possibles, tu peux tester une piste.',
+        'Active <b>Brouillon</b>, choisis un suspect, puis touche toutes ses cases possibles : une vignette apparaît dans chacune, avec autant de suspects que tu veux. Elles ne bloquent rien. Un <b>appui long</b> sur une vignette la transforme en vrai pion, et les autres vignettes de ce suspect disparaissent.') +
+      pair('5. Trouver le meurtrier',
+        'Le meurtrier était <b>seul avec la victime</b>, dans la même zone. On le trouve à la fin, une fois tout le monde placé.',
+        'Quand la grille est juste, l’écran de victoire s’ouvre et le nom du meurtrier s’inscrit dans l’encart « Le meurtrier est… ». Une grille complète mais fausse t’indique combien de positions sont correctes.') +
+      '<h3>Se faire aider</h3><ul>' +
+      '<li><b>Indice</b> : 1er appui, la personne à regarder ; 2e appui, ses cases possibles ; 3e appui, le placement.</li>' +
+      '<li><b>Vérifier</b> entoure les pions mal placés. <b>Annuler</b> et <b>Rétablir</b> remontent dans tes actions. <b>Effacer</b> vide la grille.</li>' +
+      '<li><b>Options</b> : l’option « signaler les indices non respectés » affiche ✓ ou ✗ sur chaque fiche placée.</li></ul>' +
       '<h3>Petit glossaire des indices</h3><table>' +
       '<tr><th>Indice</th><th>Signification</th></tr>' +
       '<tr><td>Au nord / au sud de…</td><td>Strictement plus haut / plus bas sur le plan, dans n’importe quelle colonne.</td></tr>' +
@@ -1081,13 +1086,13 @@
       '<tr><td>Au moins deux personnes dans…</td><td>Deux ou plus (trois est permis, un ne l’est pas).</td></tr></table>' +
       '<h3>Techniques de résolution</h3><ul>' +
       '<li><b>Commence par les indices fermés :</b> une zone précise, un objet rare, une rangée ou une colonne imposée.</li>' +
-      '<li><b>Raye rangées et colonnes :</b> chaque personne placée élimine sa rangée et sa colonne pour les autres.</li>' +
+      '<li><b>Regarde les croix :</b> chaque suspect placé élimine sa rangée et sa colonne pour les autres.</li>' +
       '<li><b>Placements forcés :</b> si une personne n’a plus qu’une case possible, ou si une rangée ne peut plus accueillir qu’une seule personne, place-la.</li>' +
       '<li><b>Capacité des zones :</b> compte les cases libres d’une zone et les personnes qui doivent y aller.</li>' +
       '<li><b>Lis les indices à la lettre :</b> « seul », « seule personne », « à côté » ont un sens précis.</li>' +
       '<li><b>Garde le meurtre pour la fin :</b> la paire victime-meurtrier sert de vérification finale.</li></ul>' +
-      '<h3>Commandes</h3>' + gesturesHtml() +
-      '<ul><li><b>Indice</b> : 1er appui = qui regarder, 2e = cases possibles, 3e = placement. <b>Vérifier</b> signale les pions mal placés.</li>' +
+      '<h3>Raccourcis clavier et sauvegarde</h3><ul>' +
+      '<li>Initiale d’un suspect : le sélectionne. Touche 1 : mode normal. Touche 2 : Brouillon. Touche ? : un indice. Ctrl+Z : annuler. Échap : désélectionner.</li>' +
       '<li>La partie est sauvegardée automatiquement sur cet appareil.</li></ul>' +
       '<p style="font-size:14px;color:#6a6a7a;margin-top:20px">Murdoku est une création de Manuel Garand (murdoku.com). Adaptation web non officielle, en français, pour un usage personnel.</p>');
   }

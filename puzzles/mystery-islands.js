@@ -4,7 +4,6 @@
   original: 'The Mystery Islands',
   difficulty: 'expert',
   order: 11,
-  theme: 'classic',
   palette: { diff: '#5a5aa8', logo: 'dark', bg1: '#d7eefc', bg2: '#a9d7f4', card: '#f6efc6', card2: '#d6e2fb', victim: '#f7cfdc', ink: '#1b2430', title: '#1d1d24', panel: '#f6efc6', legendOk: '#c6dcf6', legendNo: '#f3c4b8', label: '#ffffff', titleDark: true },
   size: 16,
   victim: 'Vincent',

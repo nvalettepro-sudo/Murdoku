@@ -4,7 +4,6 @@
   original: 'The Golf Course',
   difficulty: 'expert',
   order: 10,
-  theme: 'classic',
   palette: { diff: '#3a3a46', logo: 'dark', bg1: '#e4f6e8', bg2: '#a8ecec', card: '#d6f3f6', card2: '#ead9f3', victim: '#f7cfdc', ink: '#1b2a24', title: '#4aa58e', panel: '#9df0ee', legendOk: '#c8f5c8', legendNo: '#f3c4b8', label: '#ffffff', titleDark: true },
   size: 16,
   victim: 'Vinny',

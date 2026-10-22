@@ -33,41 +33,12 @@
         '<rect x="14" y="46" width="14" height="30" rx="7" fill="' + c + '"/>' +
         '<rect x="72" y="46" width="14" height="30" rx="7" fill="' + c + '"/>', 3.5);
     },
-    armchair: function (o) {
-      const c = o.v || '#f0d7a8';
-      return shadow(50, 86, 34, 9) + g(
-        '<path d="M22 50 Q20 16 50 14 Q80 16 78 50 Z" fill="' + c + '"/>' +
-        '<path d="M28 24 L72 24 M26 34 L74 34" stroke="#d9b77c" stroke-width="2.5" fill="none"/>' +
-        '<rect x="20" y="48" width="60" height="30" rx="8" fill="' + c + '"/>' +
-        '<rect x="12" y="44" width="16" height="36" rx="8" fill="' + c + '"/>' +
-        '<rect x="72" y="44" width="16" height="36" rx="8" fill="' + c + '"/>' +
-        '<path d="M56 36 L74 30 L76 44 L60 48 Z" fill="#fbf4e6" stroke-width="2.5"/>', 3.5);
-    },
-    schoolchair: function (o) {
-      return shadow(50, 86, 30, 7) + g(
-        '<rect x="24" y="18" width="52" height="34" rx="6" fill="#a9877a"/>' +
-        '<rect x="20" y="48" width="60" height="22" rx="5" fill="#8f6e62"/>' +
-        '<path d="M26 70 L24 86 M74 70 L76 86" stroke-width="3.5"/>' +
-        '<circle cx="24" cy="88" r="3.5" fill="#7fb7c9"/><circle cx="76" cy="88" r="3.5" fill="#7fb7c9"/>', 3.5);
-    },
     table: function (o) { // utilisé seulement pour les tables d'une case (sinon pièce fusionnée)
       const c = o.v || C.table;
       return shadow(50, 84, 38, 8) + g(
         '<rect x="12" y="16" width="76" height="56" rx="5" fill="' + c + '"/>' +
         '<rect x="12" y="62" width="76" height="10" rx="3" fill="' + shade(c, -0.18) + '"/>' +
         '<path d="M20 72 L20 86 M80 72 L80 86" stroke-width="5"/>', 3.5);
-    },
-    roundtable: function () {
-      return shadow(50, 86, 30, 7) + g(
-        '<path d="M30 60 L26 86 M70 60 L74 86 M50 64 L50 88" stroke-width="5"/>' +
-        '<ellipse cx="50" cy="44" rx="40" ry="30" fill="#5a4640"/>' +
-        '<path d="M64 26 Q72 30 76 36" stroke="#8a7670" stroke-width="2.5" fill="none"/>', 3.5);
-    },
-    desk: function (o) {
-      return shadow(50, 84, 36, 7) + g(
-        '<rect x="14" y="16" width="72" height="54" rx="6" fill="#7a6660"/>' +
-        '<path d="M22 30 L26 60 M40 26 L42 64 M64 28 L62 60" stroke="#9a8680" stroke-width="2" fill="none"/>' +
-        '<path d="M20 70 L20 86 M80 70 L80 86" stroke="#6a7d86" stroke-width="5"/>', 3.5);
     },
     shelf: function (o) {
       if (o.style === 'wood') return woodShelf();
@@ -99,13 +70,6 @@
         '<path d="M50 56 C34 40 18 44 10 40 C26 38 40 42 50 54 C62 40 78 38 90 40 C80 46 66 46 52 58 Z" fill="' + C.plantDark + '"/>' +
         '<path d="M30 56 L70 56 L64 86 L36 86 Z" fill="' + C.pot + '"/>' +
         '<ellipse cx="50" cy="57" rx="21" ry="5" fill="' + shade(C.pot, -0.25) + '" stroke-width="3"/>', 3.2);
-    },
-    flowerpot: function () {
-      return shadow(50, 88, 28, 6) + g(
-        '<ellipse cx="50" cy="80" rx="30" ry="9" fill="#f6eee6"/>' +
-        '<path d="M26 54 L74 54 L68 80 L32 80 Z" fill="#f6f0ea"/><path d="M30 64 L70 64" stroke="#d84a4a" stroke-width="5"/>' +
-        '<path d="M50 54 C30 50 16 40 20 30 C32 30 40 40 50 46 C50 30 44 18 52 12 C60 20 56 34 54 46 C62 36 72 28 82 32 C82 44 68 52 52 56 Z" fill="#5fae5f"/>' +
-        flowerHead(36, 30, '#e84a4a') + flowerHead(60, 26, '#e84a4a') + flowerHead(48, 42, '#d83a3a') + flowerHead(70, 42, '#e84a4a') + flowerHead(26, 44, '#e05050'), 3);
     },
     present: function (o) {
       const c = o.v || C.gift;
@@ -143,13 +107,6 @@
     snowtree: function () {
       return ICONS.tree({ v: '#ffffff' });
     },
-    xmastree: function () {
-      return shadow(50, 90, 32, 6) + g(
-        '<rect x="44" y="76" width="12" height="12" fill="#8a5a40"/>' +
-        '<path d="M50 10 L22 50 L34 50 L14 78 L86 78 L66 50 L78 50 Z" fill="#4f9e63"/>' +
-        '<path d="M44 12 L50 2 L56 12 L66 12 L58 18 L61 28 L50 22 L39 28 L42 18 L34 12 Z" fill="#f6d84a" stroke-width="2.5"/>', 3) +
-        '<circle cx="40" cy="44" r="4" fill="#e84a4a"/><circle cx="60" cy="58" r="4" fill="#4a8ae8"/><circle cx="36" cy="66" r="4" fill="#f6d84a"/><circle cx="62" cy="38" r="3.5" fill="#f6d84a"/><circle cx="52" cy="70" r="4" fill="#e84a4a"/>';
-    },
     trash: function () {
       return shadow(50, 88, 24, 6) + g(
         '<path d="M28 30 L72 30 L66 84 L34 84 Z" fill="#7fb7c9"/>' +
@@ -163,11 +120,6 @@
         return '<g transform="translate(0,' + (d === 'b' ? 100 : 0) + ')"><rect x="16" y="-7" width="68" height="14" rx="6"' + st + '/><rect x="24" y="-2.5" width="52" height="5" rx="2" fill="#ffffff"/></g>';
       }
       return '<g transform="translate(' + (d === 'r' ? 100 : 0) + ',0)"><rect x="-7" y="16" width="14" height="68" rx="6"' + st + '/><rect x="-2.5" y="24" width="5" height="52" rx="2" fill="#ffffff"/></g>';
-    },
-    window: function () {
-      return '<g transform="translate(2,0)">' + g('<rect x="0" y="6" width="24" height="88" rx="3" fill="#a87a5a"/>' +
-        '<rect x="5" y="12" width="14" height="76" fill="#cfe9f4" stroke-width="2.5"/><path d="M5 50 L19 50 M12 12 L12 88" stroke-width="2.5"/>' +
-        '<path d="M7 20 L11 16 M7 58 L11 54" stroke="#ffffff" stroke-width="2"/>', 3) + '</g>';
     },
     box: function () {
       return shadow(50, 88, 36, 6) + g(
@@ -233,12 +185,6 @@
       return '<path d="M20 58 C10 44 26 34 36 38 C40 26 62 26 64 38 C78 32 90 46 80 56 C88 66 74 76 62 70 C56 82 34 80 32 70 C18 74 10 64 20 58 Z" fill="#3a3a40"/>' +
         '<circle cx="18" cy="30" r="4" fill="#3a3a40"/><circle cx="84" cy="30" r="5" fill="#3a3a40"/><ellipse cx="78" cy="82" rx="7" ry="3.5" fill="#3a3a40"/><ellipse cx="22" cy="84" rx="6" ry="3" fill="#3a3a40"/>' +
         '<ellipse cx="42" cy="48" rx="8" ry="3" fill="#5a5a62"/>';
-    },
-    crumbs: function () {
-      const pts = [[24, 30, 7], [48, 22, 5], [70, 34, 8], [34, 52, 5], [60, 56, 7], [80, 62, 5], [28, 74, 6], [52, 78, 5], [74, 84, 4], [16, 50, 3], [44, 40, 3], [86, 44, 3]];
-      return pts.map(function (p) {
-        return '<path d="M' + (p[0] - p[2]) + ' ' + p[1] + ' q' + p[2] * 0.4 + ' -' + p[2] + ' ' + p[2] * 1.4 + ' -' + p[2] * 0.6 + ' q' + p[2] * 0.8 + ' ' + p[2] * 0.8 + ' -' + p[2] * 0.2 + ' ' + p[2] * 1.4 + ' q-' + p[2] * 1.2 + ' ' + p[2] * 0.2 + ' -' + p[2] * 1.2 + ' -' + p[2] * 0.8 + ' z" fill="#b88850" stroke="' + O + '" stroke-width="2.2"/>';
-      }).join('');
     },
     tee: function () {
       return g('<ellipse cx="50" cy="62" rx="30" ry="18" fill="#6fcf6f"/>' +
@@ -373,7 +319,7 @@
   }
 
   // Types dessinés comme surfaces fusionnées (pièces multi-cases) plutôt qu'icônes
-  const SURFACES = { table: true, desk: true, carpet: true, path: true, sand: true, water: true };
+  const SURFACES = { table: true, carpet: true, path: true, sand: true, water: true };
   // Types qui s'étirent sur 2 cases (icône 200 × 100)
   const LONG = { car: true, bed: true };
   // Types qui occupent un carré de 2 × 2 cases (icône 200 × 200)
@@ -381,12 +327,12 @@
 
   // Noms français des objets (légende, info-bulles)
   const NAMES = {
-    chair: 'Chaise', armchair: 'Fauteuil', schoolchair: 'Chaise', table: 'Table', roundtable: 'Table', desk: 'Bureau',
-    shelf: 'Étagère', tv: 'Télé', plant: 'Plante', flowerpot: 'Plante', present: 'Cadeau', register: 'Caisse',
-    teddy: 'Peluche', tree: 'Arbre', snowtree: 'Arbre', xmastree: 'Sapin', trash: 'Corbeille', door: 'Porte',
-    window: 'Fenêtre', box: 'Caisse', bonsai: 'Bonsaï', cactus: 'Cactus', shrub: 'Arbuste', flower: 'Fleurs',
+    chair: 'Chaise', table: 'Table',
+    shelf: 'Étagère', tv: 'Télé', plant: 'Plante', present: 'Cadeau', register: 'Caisse',
+    teddy: 'Peluche', tree: 'Arbre', snowtree: 'Arbre', trash: 'Corbeille', door: 'Porte',
+    box: 'Caisse', bonsai: 'Bonsaï', cactus: 'Cactus', shrub: 'Arbuste', flower: 'Fleurs',
     flowers: 'Fleurs', lily: 'Nénuphar', statue: 'Statue', easel: 'Chevalet', framed: 'Tableau encadré', oil: "Tache d'huile",
-    crumbs: 'Miettes', tee: 'Départ', flag: 'Drapeau', cart: 'Voiturette', car: 'Voiture', bed: 'Lit', carpet: 'Tapis',
+    tee: 'Départ', flag: 'Drapeau', cart: 'Voiturette', car: 'Voiture', bed: 'Lit', carpet: 'Tapis',
     path: 'Chemin', sand: 'Sable', water: 'Eau', house: 'Maison', shark: 'Requin', boulder: 'Rocher', rock: 'Rocher',
     lion: 'Lion', penguin: 'Manchot', bear: 'Ours', crocodile: 'Crocodile', elephant: 'Éléphant', palm: 'Palmier', animal: 'Animal'
   };

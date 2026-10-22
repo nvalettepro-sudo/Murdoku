@@ -4,7 +4,6 @@
   original: 'Holiday Shopping',
   difficulty: 'moyen',
   order: 8,
-  theme: 'classic',
   palette: { table: '#5f9e78', bg1: '#f29a96', bg2: '#f4d6e2', card: '#fde8e8', card2: '#fde8e8', victim: '#ef9a9a', ink: '#2a1f22', title: '#ffffff', panel: '#fbe3e6', legendOk: '#a8e8a8', legendNo: '#f3a0a0', label: '#ffffff' },
   size: 11,
   victim: 'Vlimbo',

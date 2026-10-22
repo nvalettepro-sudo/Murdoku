@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.2',
+    VERSION: '1.3',
     DATE: '2026-10-22',
     HISTORY: [
+      { v: '1.3', d: '2026-10-22', t: 'Police unique, étiquettes de pièces dans leur pièce, bouton Menu, aide fusionnée (règles et instructions), croix tracées en glissant sans bouton, suppression des énigmes famille.' },
       { v: '1.2', d: '2026-10-22', t: 'Numéro de version et date affichés sur l’accueil et dans les Options.' },
       { v: '1.1', d: '2026-10-22', t: 'Pions avec le visage des suspects, mode Brouillon, croix automatiques, barre d’outils simplifiée, prénoms toujours dans leur cadre.' },
       { v: '1.0', d: '2026-10-22', t: 'Première version : 13 énigmes, iPad et PC, indices, vérification, sauvegarde, jeu hors ligne.' }

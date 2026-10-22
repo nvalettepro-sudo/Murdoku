@@ -5,6 +5,7 @@
   const O = I.OUTLINE;
   const S = 1000; // taille du plateau en unités SVG
   const PAD = 16;
+  const FONT_ATTR = 'Montserrat, system-ui, -apple-system, Segoe UI, sans-serif';
 
   // Couleurs des pions (une par personne, la victime a sa propre couleur)
   const PAWN = ['#d9574b', '#2f8a55', '#3f9fb5', '#5566b8', '#8a4f9e', '#d27b33', '#c34d7d', '#2c7a8c',
@@ -138,7 +139,7 @@
       return out;
     }
     // table / bureau : plateau avec contour, chant inférieur et pieds
-    const top = piece.v || (piece.type === 'desk' ? '#7a6660' : (opts.tableColor || '#6e6a86'));
+    const top = piece.v || (opts.tableColor || '#6e6a86');
     out += rectsSvg(O, O, sw * 2) + rectsSvg(I.shade(top, -0.2));
     out += rects.map(function (q) {
       return '<rect x="' + q.x + '" y="' + q.y + '" width="' + q.w + '" height="' + Math.max(0, q.h - s * 0.1) + '" fill="' + top + '"/>';
@@ -179,7 +180,7 @@
   }
 
   /** Couche statique du plateau (sols, murs, objets, étiquettes). */
-  function staticLayer(P, theme) {
+  function staticLayer(P) {
     const N = P.N, s = S / N, def = P.def;
     const pal = def.palette || {};
     let defs = '<defs>';
@@ -205,7 +206,7 @@
       const ar = def.areas[a];
       if (ar.number && ar.label) {
         const x = (ar.label[1] + 0.5) * s, y = (ar.label[0] + 0.5) * s;
-        out += '<text x="' + x + '" y="' + (y + s * 0.32) + '" text-anchor="middle" font-family="Rubik, sans-serif" font-weight="800" font-size="' + s * 0.95 + '" fill="#2f7a55" opacity=".8">' + esc(a) + '</text>';
+        out += '<text x="' + x + '" y="' + (y + s * 0.32) + '" text-anchor="middle" font-family="Montserrat, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800" font-size="' + s * 0.95 + '" fill="#2f7a55" opacity=".8">' + esc(a) + '</text>';
       }
     });
     // fines lignes de grille
@@ -234,50 +235,125 @@
     }
     // icônes triées par rangée (les objets du bas recouvrent ceux du haut)
     icons.sort(function (a, b) { return Math.min.apply(null, a.cells.map(function (x) { return x[0]; })) - Math.min.apply(null, b.cells.map(function (x) { return x[0]; })); });
-    const edgeIcons = icons.filter(function (p) { return p.type === 'door' || p.type === 'window'; });
+    const edgeIcons = icons.filter(function (p) { return p.type === 'door'; });
     const shelfStyle = pal.shelf || null;
     icons.filter(function (p) { return edgeIcons.indexOf(p) < 0; }).forEach(function (p) {
       out += placeIcon(shelfStyle && p.type === 'shelf' ? Object.assign({}, p, { style: shelfStyle }) : p, s);
     });
     out += '<path d="' + walls + '" stroke="' + O + '" stroke-width="' + wall + '" stroke-linecap="square"/>';
     edgeIcons.forEach(function (p) { out += placeIcon(p, s); });
-    // décor : tableau noir accroché au mur du haut (salle de classe)
-    if (def.decor === 'chalkboard') {
-      const x0 = s * 1.4, x1 = S - s * 1.4, h = s * 0.42;
-      out += '<g><rect x="' + x0 + '" y="' + (-PAD / 2) + '" width="' + (x1 - x0) + '" height="' + h + '" rx="4" fill="#8a5a3a" stroke="' + O + '" stroke-width="4"/>' +
-        '<rect x="' + (x0 + 8) + '" y="' + (-PAD / 2 + 6) + '" width="' + (x1 - x0 - 16) + '" height="' + (h - 16) + '" fill="#2f4a3a"/>' +
-        '<path d="M' + (x0 + s * 1.2) + ' ' + (h * 0.45) + ' q' + s * 0.3 + ' -' + h * 0.3 + ' ' + s * 0.6 + ' 0 t' + s * 0.6 + ' 0" stroke="#f0f0e8" stroke-width="3" fill="none" opacity=".85"/>' +
-        '<circle cx="' + (S / 2) + '" cy="' + h * 0.35 + '" r="' + h * 0.22 + '" fill="none" stroke="#f0f0e8" stroke-width="3" opacity=".85"/>' +
-        '<rect x="' + (S * 0.66) + '" y="' + (h - 12) + '" width="' + s * 0.5 + '" height="7" rx="2" fill="#f0f0e8" stroke="' + O + '" stroke-width="2"/></g>';
-    }
     // cadre extérieur
     out += '<rect x="' + (-PAD / 2) + '" y="' + (-PAD / 2) + '" width="' + (S + PAD) + '" height="' + (S + PAD) + '" fill="none" stroke="' + O + '" stroke-width="' + PAD + '" rx="3"/>';
     // étiquettes de zones
-    out += '<g class="area-labels">' + P.areaIds.map(function (a) { return areaLabel(P, a, s, theme); }).join('') + '</g>';
+    out += '<g class="area-labels">' + P.areaIds.map(function (a) { return areaLabel(P, a, s); }).join('') + '</g>';
     return out;
   }
 
-  function areaLabel(P, a, s, theme) {
+  /**
+   * Étiquette d'une zone. On choisit la plus large suite de cases de la zone sur une rangée
+   * (de préférence celle indiquée par `label`), puis fitLabels() ajuste le texte à l'écran
+   * (réduction de la police, puis passage sur deux lignes) pour qu'il reste dans la pièce.
+   */
+  function areaLabel(P, a, s) {
     const ar = P.def.areas[a];
     if (ar.number || ar.hideLabel) return '';
-    let r, c;
-    if (ar.label) { r = ar.label[0]; c = ar.label[1]; }
-    else {
-      // case la plus basse puis la plus à droite de la zone
-      let best = -1;
-      for (let k = 0; k < P.N * P.N; k++) if (P.area[k] === a) best = k;
-      r = Math.floor(best / P.N); c = best % P.N;
+    const N = P.N;
+    const txt = ar.name.toUpperCase();
+    const fs0 = Math.max(15, Math.min(25, s * 0.25));
+    // suites de cases de la zone, par rangée
+    const runs = [];
+    for (let r = 0; r < N; r++) {
+      let c = 0;
+      while (c < N) {
+        if (P.area[r * N + c] !== a) { c++; continue; }
+        let c1 = c;
+        while (c1 + 1 < N && P.area[r * N + c1 + 1] === a) c1++;
+        runs.push({ r: r, c0: c, c1: c1, w: (c1 - c + 1) * s });
+        c = c1 + 1;
+      }
     }
-    const fam = theme === 'family';
-    const txt = fam ? ar.name.toUpperCase() : ar.name.toUpperCase();
-    const fs = Math.max(17, Math.min(30, s * 0.3));
-    const w = txt.length * fs * (fam ? 0.62 : 0.66) + fs * 1.1;
-    const h = fs * 1.35;
-    let cx = (c + 0.5) * s, cy = (r + 1) * s - h * 0.55;
-    cx = Math.max(w / 2 + 4, Math.min(S - w / 2 - 4, cx));
-    return '<g class="lbl" transform="translate(' + cx.toFixed(1) + ',' + cy.toFixed(1) + ')">' +
-      '<rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h + '" rx="' + h / 2 + '" fill="' + (fam ? '#fffbea' : '#ffffff') + '" stroke="' + O + '" stroke-width="' + Math.max(2.5, fs * 0.13) + '"/>' +
-      '<text y="' + fs * 0.36 + '" text-anchor="middle" font-size="' + fs + '" font-family="' + (fam ? "'Patrick Hand', 'Comic Sans MS', cursive" : "'Lora', Georgia, serif") + '" fill="' + O + '"' + (fam ? ' letter-spacing="1.5"' : '') + '>' + esc(txt) + '</text></g>';
+    if (!runs.length) return '';
+    const hint = ar.label || null;
+    const est = function (f) { return txt.length * f * 0.8 + f * 1.1; }; // largeur estimée (majuscules)
+    let run = null;
+    if (hint) run = runs.find(function (q) { return q.r === hint[0] && hint[1] >= q.c0 && hint[1] <= q.c1; }) || null;
+    // la suite choisie doit pouvoir accueillir le texte (au besoin sur deux lignes, police réduite)
+    const longest = txt.split(' ').reduce(function (m, w2) { return Math.max(m, w2.length); }, 1);
+    const fits = function (q) { return est(fs0 * 0.85) <= q.w - 8 || (longest * fs0 * 0.7 * 0.8 + fs0) <= q.w - 8; };
+    if (!run || !fits(run)) {
+      const ok = runs.filter(fits);
+      const pool = ok.length ? ok : runs;
+      run = pool.reduce(function (best, q) {
+        if (!best) return q;
+        if (q.w !== best.w) return q.w > best.w ? q : best;
+        return q.r > best.r ? q : best; // à largeur égale, la plus basse
+      }, null);
+    }
+    const hx = hint ? (hint[1] + 0.5) * s : (run.c0 + run.c1 + 1) / 2 * s;
+    const l = run.c0 * s, r2 = (run.c1 + 1) * s, bottom = (run.r + 1) * s;
+    const w0 = Math.min(est(fs0), run.w - 8), h0 = fs0 * 1.35;
+    const cx0 = Math.max(l + w0 / 2 + 4, Math.min(r2 - w0 / 2 - 4, hx));
+    return '<g class="lbl" data-area="' + esc(a) + '" data-text="' + esc(txt) + '" data-fs="' + fs0.toFixed(2) + '" data-max="' + (run.w - 10).toFixed(1) +
+      '" data-l="' + l.toFixed(1) + '" data-r="' + r2.toFixed(1) + '" data-hx="' + hx.toFixed(1) + '" data-bottom="' + bottom.toFixed(1) +
+      '" transform="translate(' + cx0.toFixed(1) + ',' + (bottom - h0 / 2 - 3).toFixed(1) + ')">' +
+      '<rect x="' + (-w0 / 2).toFixed(1) + '" y="' + (-h0 / 2).toFixed(1) + '" width="' + w0.toFixed(1) + '" height="' + h0.toFixed(1) + '" rx="' + (h0 / 2).toFixed(1) + '" fill="#ffffff" stroke="' + O + '" stroke-width="' + Math.max(2.5, fs0 * 0.13).toFixed(1) + '"/>' +
+      '<text y="' + (fs0 * 0.36).toFixed(1) + '" text-anchor="middle" font-size="' + fs0.toFixed(2) + '" font-family="' + FONT_ATTR + '" font-weight="700" fill="' + O + '">' + esc(txt) + '</text></g>';
+  }
+
+  /**
+   * Ajuste les étiquettes de zones aux dimensions réelles du texte (une fois la police chargée) :
+   * police réduite, puis deux lignes, jusqu'à tenir dans la largeur de la pièce.
+   */
+  function fitLabels(rootEl) {
+    const NS = 'http://www.w3.org/2000/svg';
+    Array.prototype.forEach.call(rootEl.querySelectorAll('g.lbl'), function (g) {
+      const t = g.querySelector('text'), rc = g.querySelector('rect');
+      if (!t || !rc || !t.getBBox) return;
+      const txt = g.getAttribute('data-text');
+      const fs0 = +g.getAttribute('data-fs'), max = +g.getAttribute('data-max');
+      const l = +g.getAttribute('data-l'), r = +g.getAttribute('data-r');
+      const hx = +g.getAttribute('data-hx'), bottom = +g.getAttribute('data-bottom');
+      function layout(lines, fs) {
+        while (t.firstChild) t.removeChild(t.firstChild);
+        const lh = fs * 1.12;
+        t.setAttribute('font-size', fs.toFixed(2));
+        t.setAttribute('y', (-(lines.length - 1) * lh / 2 + fs * 0.36).toFixed(2));
+        lines.forEach(function (ln, i) {
+          const ts = document.createElementNS(NS, 'tspan');
+          ts.setAttribute('x', '0');
+          if (i) ts.setAttribute('dy', lh.toFixed(2));
+          ts.textContent = ln;
+          t.appendChild(ts);
+        });
+        const bb = t.getBBox();
+        return { w: bb.width + fs * 1.1, h: lines.length * lh + fs * 0.5 };
+      }
+      let fs = fs0, lines = [txt], m = layout(lines, fs);
+      if (!(m.w > 0)) return; // texte non rendu (élément masqué) : on garde l'estimation
+      // 1) une ligne, police réduite jusqu'à 85 %
+      while (m.w > max && fs > fs0 * 0.85) { fs *= 0.96; m = layout(lines, fs); }
+      // 2) deux lignes si besoin
+      if (m.w > max && txt.indexOf(' ') > 0) {
+        const words = txt.split(' ');
+        let best = null;
+        for (let i = 1; i < words.length; i++) {
+          const a = words.slice(0, i).join(' '), b = words.slice(i).join(' ');
+          const sc = Math.max(a.length, b.length);
+          if (!best || sc < best.sc) best = { sc: sc, lines: [a, b] };
+        }
+        lines = best.lines; fs = fs0 * 0.92; m = layout(lines, fs);
+        while (m.w > max && fs > fs0 * 0.6) { fs *= 0.95; m = layout(lines, fs); }
+      } else {
+        while (m.w > max && fs > fs0 * 0.6) { fs *= 0.95; m = layout(lines, fs); }
+      }
+      rc.setAttribute('x', (-m.w / 2).toFixed(1));
+      rc.setAttribute('y', (-m.h / 2).toFixed(1));
+      rc.setAttribute('width', m.w.toFixed(1));
+      rc.setAttribute('height', m.h.toFixed(1));
+      rc.setAttribute('rx', Math.min(m.h / 2, fs * 0.9).toFixed(1));
+      const cx = (r - l) >= m.w + 8 ? Math.max(l + m.w / 2 + 4, Math.min(r - m.w / 2 - 4, hx)) : (l + r) / 2;
+      g.setAttribute('transform', 'translate(' + cx.toFixed(1) + ',' + (bottom - m.h / 2 - 3).toFixed(1) + ')');
+    });
   }
 
   /** Pion d'une personne (bouteille avec initiale), dessiné dans un repère 100 × 100. */
@@ -288,7 +364,7 @@
       '<path d="M28 84 Q50 92 72 84 L72 78 Q50 86 28 78 Z" fill="' + d + '"/>' +
       '<path d="M40 26 Q36 34 38 44" stroke="' + l + '" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>' +
       '<rect x="40" y="8" width="20" height="16" rx="4" fill="' + d + '" stroke="' + O + '" stroke-width="3"/>' +
-      '<text x="50" y="73" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="30" fill="#ffffff" stroke="' + O + '" stroke-width="1.2" paint-order="stroke">' + esc(letter) + '</text>' + (extra || '');
+      '<text x="50" y="73" text-anchor="middle" font-family="Montserrat, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800" font-size="30" fill="#ffffff" stroke="' + O + '" stroke-width="1.2" paint-order="stroke">' + esc(letter) + '</text>' + (extra || '');
   }
 
   /**
@@ -311,9 +387,9 @@
       // pastille plus grande sur les grandes grilles pour rester lisible
       (P.N >= 11
         ? '<circle cx="74" cy="74" r="25" fill="' + color + '" stroke="' + O + '" stroke-width="4"/>' +
-          '<text x="74" y="86" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="34" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>'
+          '<text x="74" y="86" text-anchor="middle" font-family="Montserrat, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800" font-size="34" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>'
         : '<circle cx="80" cy="80" r="17" fill="' + color + '" stroke="' + O + '" stroke-width="3.5"/>' +
-          '<text x="80" y="88.5" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="23" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>') +
+          '<text x="80" y="88.5" text-anchor="middle" font-family="Montserrat, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800" font-size="23" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>') +
       (extra || '');
   }
 
@@ -377,12 +453,12 @@
         const x = c * s + (j % 2) * q + pad, y = r * s + Math.floor(j / 2) * q + pad;
         const sel = st.selected === i;
         out += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + w.toFixed(1) + '" rx="' + (w * 0.22).toFixed(1) + '" fill="' + pawnColor(P, i) + '" stroke="' + (sel ? '#ffd54a' : '#ffffff') + '" stroke-width="' + Math.max(1.5, w * (sel ? 0.12 : 0.07)).toFixed(1) + '" stroke-dasharray="' + (sel ? 'none' : (w * 0.18).toFixed(1) + ' ' + (w * 0.1).toFixed(1)) + '"/>' +
-          '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y + w * 0.73).toFixed(1) + '" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="' + (w * 0.64).toFixed(1) + '" fill="#ffffff">' + esc(P.people[i].name[0].toUpperCase()) + '</text>';
+          '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y + w * 0.73).toFixed(1) + '" text-anchor="middle" font-family="Montserrat, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800" font-size="' + (w * 0.64).toFixed(1) + '" fill="#ffffff">' + esc(P.people[i].name[0].toUpperCase()) + '</text>';
       });
       if (l.length > 4) {
         const x = c * s + q + pad, y = r * s + q + pad;
         out += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + w.toFixed(1) + '" rx="' + (w * 0.22).toFixed(1) + '" fill="#ffffff" stroke="' + O + '" stroke-width="' + Math.max(1.5, w * 0.06).toFixed(1) + '"/>' +
-          '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y + w * 0.7).toFixed(1) + '" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="' + (w * 0.5).toFixed(1) + '" fill="' + O + '">+' + (l.length - 3) + '</text>';
+          '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y + w * 0.7).toFixed(1) + '" text-anchor="middle" font-family="Montserrat, system-ui, -apple-system, Segoe UI, sans-serif" font-weight="800" font-size="' + (w * 0.5).toFixed(1) + '" fill="' + O + '">+' + (l.length - 3) + '</text>';
       }
       out += '</g>';
     });
@@ -404,7 +480,7 @@
   }
 
   root.MurdokuBoard = {
-    SIZE: S, PAD: PAD, staticLayer: staticLayer, dynamicLayer: dynamicLayer,
+    SIZE: S, PAD: PAD, staticLayer: staticLayer, fitLabels: fitLabels, dynamicLayer: dynamicLayer,
     pawnSvg: pawnSvg, portraitPawn: portraitPawn, pawnColor: pawnColor, esc: esc
   };
 })(typeof window !== 'undefined' ? window : this);

@@ -20,10 +20,8 @@ Le jeu s'installe alors comme une application, et reste jouable hors ligne aprè
 
 | Énigme | Original | Grille | Difficulté |
 |---|---|---|---|
-| Le voleur de biscuits | The Cookie Thief | 6×6 | très facile (famille) |
 | Netflix & Crime | Netflix and Kill | 6×6 | facile |
 | Le Garage | Car Repair | 6×6 | facile |
-| La Caricature | The Caricature | 7×7 | facile (famille) |
 | Le Jardin | The Backyard Garden | 9×9 | facile |
 | Le Tribunal | The Courtroom | 9×9 | facile |
 | L'École d'art | The Art School | 9×9 | moyen |
@@ -40,14 +38,14 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 ## Fonctionnalités
 
 - **Placement** : touche une fiche suspect, puis une case. Le pion montre le visage du suspect et son initiale. Touche le pion pour le sélectionner, puis encore pour le retirer.
-- **Croix** : touche une case vide, fais un appui long ou un clic droit. Le bouton Croix permet aussi de glisser sur plusieurs cases.
+- **Croix** : touche une case vide, fais un appui long ou un clic droit. Glisse le doigt sur plusieurs cases vides pour en tracer en série.
 - **Croix automatiques** : quand un suspect est placé, les cases libres de sa rangée et de sa colonne reçoivent une croix claire. Les objets non occupables n'en reçoivent pas. Ce comportement se désactive dans les Options.
 - **Brouillon** : active le bouton, choisis un suspect et touche toutes ses cases possibles. Des vignettes apparaissent, jusqu'à 4 visibles par case. Un appui long sur une vignette la transforme en vrai pion.
 - **Indice progressif** : le premier appui désigne qui regarder, le deuxième montre les cases possibles, le troisième place le pion.
 - **Vérifier** : signale les pions mal placés.
 - **Annuler et rétablir**, chronomètre, et sauvegarde automatique sur l'appareil.
 - **Options** : activer ou non les croix automatiques, signaler les indices non respectés, afficher le chronomètre.
-- **Clavier** : l'initiale d'un suspect le sélectionne. La touche 1 revient au mode normal, 2 active Croix, 3 active Brouillon. Ctrl+Z annule.
+- **Clavier** : l'initiale d'un suspect le sélectionne. La touche 1 revient au mode normal, 2 active Brouillon. Ctrl+Z annule.
 
 ## Aperçus avant mise en ligne
 
@@ -73,7 +71,7 @@ Ils sont définis dans `js/version.js`. À chaque mise à jour :
 
 ```
 index.html            page unique
-css/style.css         styles (thèmes classique et famille)
+css/style.css         styles
 js/version.js         numéro de version, date et historique
 js/engine.js          moteur logique : règles, solveur, unicité, aide
 js/icons.js           icônes SVG des objets

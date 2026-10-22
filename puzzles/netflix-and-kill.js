@@ -4,7 +4,6 @@
   original: 'Netflix and Kill',
   difficulty: 'facile',
   order: 1,
-  theme: 'classic',
   palette: { table: '#e9c98c', bg1: '#2e5f5c', bg2: '#8fb7b4', card: '#bfe8ee', card2: '#bfe8ee', victim: '#efc4cd', ink: '#1e2b2b', title: '#ffffff', panel: '#d5f1f2', legendOk: '#b9daf0', legendNo: '#cfc5f0', label: '#ffffff' },
   size: 6,
   victim: 'Vaughn',

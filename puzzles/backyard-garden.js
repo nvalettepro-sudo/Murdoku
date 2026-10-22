@@ -4,7 +4,6 @@
   original: 'The Backyard Garden',
   difficulty: 'facile',
   order: 4,
-  theme: 'classic',
   palette: { shelf: 'wood', table: '#9a8ab8', bg1: '#2fa198', bg2: '#a6d98e', card: '#dbe7f5', card2: '#f4dcf0', victim: '#f8d0e0', ink: '#1e2b2b', title: '#c9f5d8', panel: '#c9f5de', legendOk: '#c9f5de', legendNo: '#a9d8f5', label: '#ffffff' },
   size: 9,
   victim: 'Violet',
