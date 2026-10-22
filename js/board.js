@@ -291,6 +291,32 @@
       '<text x="50" y="73" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="30" fill="#ffffff" stroke="' + O + '" stroke-width="1.2" paint-order="stroke">' + esc(letter) + '</text>' + (extra || '');
   }
 
+  /**
+   * Pion « portrait » : visage du personnage dans un carré, avec son initiale dans une pastille.
+   * Dessiné dans un repère 100 × 100 (une case).
+   */
+  function portraitPawn(P, i, extra) {
+    const A = root.MurdokuAvatars;
+    const p = P.people[i];
+    const color = pawnColor(P, i);
+    P._tiles = P._tiles || [];
+    if (!P._tiles[i]) {
+      P._tiles[i] = A.avatar(p.look, { tile: true })
+        .replace('<svg ', '<svg x="13" y="11" width="74" height="74" preserveAspectRatio="xMidYMin slice" ');
+    }
+    return '<rect x="9" y="10" width="86" height="86" rx="10" fill="rgba(20,15,40,.28)"/>' +
+      '<rect x="6" y="6" width="86" height="86" rx="10" fill="#ffffff" stroke="' + color + '" stroke-width="6"/>' +
+      P._tiles[i] +
+      '<rect x="13" y="11" width="74" height="74" fill="none" stroke="' + O + '" stroke-width="2.5"/>' +
+      // pastille plus grande sur les grandes grilles pour rester lisible
+      (P.N >= 11
+        ? '<circle cx="74" cy="74" r="25" fill="' + color + '" stroke="' + O + '" stroke-width="4"/>' +
+          '<text x="74" y="86" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="34" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>'
+        : '<circle cx="80" cy="80" r="17" fill="' + color + '" stroke="' + O + '" stroke-width="3.5"/>' +
+          '<text x="80" y="88.5" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="23" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>') +
+      (extra || '');
+  }
+
   function pawnColor(P, i) {
     return i === P.victim ? VICTIM_PAWN : PAWN[i % PAWN.length];
   }
@@ -337,17 +363,18 @@
       const p = P.people[i];
       const mark = st.marks && st.marks[i];
       let ring = '';
-      if (mark === 'bad') ring = '<circle cx="50" cy="52" r="46" fill="none" stroke="#e53935" stroke-width="7" stroke-dasharray="10 6"/>';
-      if (mark === 'good') ring = '<circle cx="50" cy="52" r="46" fill="none" stroke="#2e9e4f" stroke-width="6"/>';
-      const sel = st.selected === i ? '<circle cx="50" cy="52" r="47" fill="rgba(255,255,255,.35)" stroke="#ffd54a" stroke-width="7"/>' : '';
-      const knife = st.solved && st.culprit === i ? '<g transform="translate(70,10) rotate(25)"><path d="M0 0 L6 0 L6 34 L3 40 L0 34 Z" fill="#e8eef2" stroke="' + O + '" stroke-width="2.5"/><rect x="-3" y="34" width="12" height="5" fill="#5a4a3a" stroke="' + O + '" stroke-width="2"/></g>' : '';
-      out += '<g class="pawn" data-i="' + i + '" transform="translate(' + c * s + ',' + r * s + ') scale(' + s / 100 + ')">' + sel + ring + pawnSvg(pawnColor(P, i), p.name[0].toUpperCase(), knife) + '</g>';
+      if (mark === 'bad') ring = '<rect x="2" y="2" width="94" height="94" rx="13" fill="none" stroke="#e53935" stroke-width="7" stroke-dasharray="12 7"/>';
+      if (mark === 'good') ring = '<rect x="2" y="2" width="94" height="94" rx="13" fill="none" stroke="#2e9e4f" stroke-width="6"/>';
+      const sel = st.selected === i ? '<rect x="2" y="2" width="94" height="94" rx="13" fill="none" stroke="#ffd54a" stroke-width="7"/>' : '';
+      const knife = st.solved && st.culprit === i ? '<g transform="translate(74,2) rotate(25)"><path d="M0 0 L6 0 L6 34 L3 40 L0 34 Z" fill="#e8eef2" stroke="' + O + '" stroke-width="2.5"/><rect x="-3" y="34" width="12" height="5" fill="#5a4a3a" stroke="' + O + '" stroke-width="2"/></g>' : '';
+      void p;
+      out += '<g class="pawn" data-i="' + i + '" transform="translate(' + c * s + ',' + r * s + ') scale(' + s / 100 + ')">' + portraitPawn(P, i, knife) + ring + sel + '</g>';
     });
     return out;
   }
 
   root.MurdokuBoard = {
     SIZE: S, PAD: PAD, staticLayer: staticLayer, dynamicLayer: dynamicLayer,
-    pawnSvg: pawnSvg, pawnColor: pawnColor, esc: esc
+    pawnSvg: pawnSvg, portraitPawn: portraitPawn, pawnColor: pawnColor, esc: esc
   };
 })(typeof window !== 'undefined' ? window : this);

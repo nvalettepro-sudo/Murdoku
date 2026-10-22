@@ -423,7 +423,36 @@
     box2.style.columnGap = best.gapX + 'px';
     box2.style.rowGap = best.gapY + 'px';
     cur.compact = best.mode === 'compact';
+    fitNames(box2);
     if (!cur.compact) cur.stage.querySelector('.detail').classList.remove('show');
+  }
+
+  // Réduit la police d'un prénom tant qu'il dépasse du cadre polaroïd (tous niveaux, tous modes).
+  function fitNames(root2) {
+    Array.prototype.forEach.call(root2.querySelectorAll('.card .name'), function (el) {
+      el.style.fontSize = '';
+      const frame = el.parentNode; // .polaroid
+      const cs = getComputedStyle(el);
+      const pad = function () { return parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) * 2; };
+      const avail = function () { return frame.clientWidth * 0.9 - pad(); }; // marge pour les jambages
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      let guard = 0;
+      while (range.getBoundingClientRect().width / scaleOf(frame) > avail() && guard++ < 25) {
+        const fsz = parseFloat(getComputedStyle(el).fontSize);
+        el.style.fontSize = (fsz * 0.94).toFixed(2) + 'px';
+      }
+    });
+  }
+  // Rapport entre taille affichée et taille CSS (la planche est mise à l'échelle par transform)
+  function scaleOf(el) {
+    return el.offsetWidth ? el.getBoundingClientRect().width / el.offsetWidth : 1;
+  }
+  // Les polices web peuvent arriver après le premier rendu : on réajuste alors les prénoms.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      if (cur && cur.stage) fitNames(cur.stage.querySelector('.suspects'));
+    });
   }
 
   function renderDetail() {

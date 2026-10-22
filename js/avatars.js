@@ -84,7 +84,7 @@
     s += '<defs><clipPath id="' + id + 'h"><ellipse cx="50" cy="48" rx="19" ry="24"/></clipPath>' +
       '<clipPath id="' + id + 'f"><rect x="0" y="0" width="100" height="110"/></clipPath></defs>';
     s += '<g clip-path="url(#' + id + 'f)">';
-    s += '<rect width="100" height="110" fill="' + (fam ? 'transparent' : bg) + '"/>';
+    s += '<rect width="100" height="110" fill="' + (fam && !opts.tile ? 'transparent' : bg) + '"/>';
     s += hairBack(look.hair, hc);
     // épaules / vêtement
     s += '<path d="M6 112 Q8 88 34 82 L66 82 Q92 88 94 112 Z" fill="' + shirt + '"' + stroke + '/>';
