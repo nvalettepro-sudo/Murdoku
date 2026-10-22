@@ -20,7 +20,7 @@
   }
   function save(k, v) { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) { /* ignoré */ } }
 
-  const settings = Object.assign({ autoCross: true, autoCheck: false, timer: true }, load('settings', {}));
+  const settings = Object.assign({ autoCross: true, autoCheck: false, timer: true, showHint: false, showCheck: false }, load('settings', {}));
   delete settings.shade; // ancien réglage (grisé), remplacé par les croix automatiques
 
   // ---------- utilitaires ----------
@@ -270,7 +270,9 @@
     html += '<section class="region toolbar" style="' + box(L.toolbar) + '">' +
       toolBtn('draft', 'Brouillon', UI.pencil) +
       actBtn('undo', 'Annuler', UI.undo, 'sep') + actBtn('redo', 'Rétablir', UI.redo) +
-      actBtn('hint', 'Indice', UI.hint, 'sep') + actBtn('check', 'Vérifier', UI.check) + actBtn('reset', 'Effacer', UI.reset) +
+      (settings.showHint ? actBtn('hint', 'Indice', UI.hint, 'sep') : '') +
+      (settings.showCheck ? actBtn('check', 'Vérifier', UI.check, settings.showHint ? '' : 'sep') : '') +
+      actBtn('reset', 'Effacer', UI.reset, settings.showHint || settings.showCheck ? '' : 'sep') +
       (settings.timer && cur.orient === 'landscape' ? '<span class="timer" aria-label="Temps">' + fmtTime(cur.st.time) + '</span>' : '') + '</section>';
     html += '<section class="region culprit" style="' + box(L.culprit) + '" role="button" tabindex="0"></section>';
     html += '<nav class="region topbtns" style="' + box(L.topbtns) + '">' + actBtn('home', 'Menu', UI.grid) + actBtn('rules', 'Règles', UI.help) + actBtn('settings', 'Options', UI.gear) + '</nav>';
@@ -952,7 +954,7 @@
     if (k === 'Escape') { cur.selected = -1; cur.highlight = []; renderAll(); return; }
     if (k === '1') { cur.tool = 'normal'; renderAll(); return; }
     if (k === '2') { cur.tool = 'draft'; renderAll(); return; }
-    if (k === '?') { doHint(); return; }
+    if (k === '?') { if (settings.showHint) doHint(); return; }
     if (/^[a-zA-Z]$/.test(k)) {
       const i = cur.P.people.findIndex(function (p) { return p.name[0].toLowerCase() === k.toLowerCase(); });
       if (i >= 0) selectPerson(i);
@@ -1021,6 +1023,8 @@
     const rows = [
       ['autoCross', 'Croix automatiques', 'Quand un suspect est placé, les cases libres de sa rangée et de sa colonne reçoivent une croix claire. Tes croix restent en foncé.'],
       ['autoCheck', 'Signaler les indices non respectés', 'Affiche ✓ ou ✗ sur la fiche d’un suspect placé. Plus facile !'],
+      ['showHint', 'Afficher le bouton Indice', 'Ajoute le bouton Indice dans la barre d’outils : il désigne un suspect, puis ses cases possibles, puis le place.'],
+      ['showCheck', 'Afficher le bouton Vérifier', 'Ajoute le bouton Vérifier dans la barre d’outils : il signale les pions mal placés.'],
       ['timer', 'Afficher le chronomètre', 'Le temps est toujours enregistré.']
     ];
     const m = openModal('<h2>Options</h2>' + rows.map(function (r) {
@@ -1034,7 +1038,7 @@
       inp.addEventListener('change', function () {
         settings[inp.dataset.k] = inp.checked;
         save('settings', settings);
-        if (cur) { if (inp.dataset.k === 'timer') buildStage(); else renderAll(); }
+        if (cur) { if (/^(timer|showHint|showCheck)$/.test(inp.dataset.k)) buildStage(); else renderAll(); }
       });
     });
     m.querySelector('[data-x="wipe"]').addEventListener('click', function () {

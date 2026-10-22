@@ -147,7 +147,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 4px s
 .card .status { position: absolute; top: .2em; left: -.3em; z-index: 3; width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: #fff; border: .12em solid var(--outline); font-size: .95em; }
 .card .status.ok { background: #2e9e4f; }
 .card .status.ko { background: #e53935; }
-.card.placed .polaroid { opacity: .78; }
+.card.placed .polaroid { filter: grayscale(1) brightness(.8); }
+.card.placed .clue { opacity: .6; }
 .card.selected { transform: scale(1.06); }
 .card.selected .polaroid { box-shadow: 0 0 0 .3em #ffd54a, .25em .3em 0 rgba(0,0,0,.18); }
 .card.selected .clue { box-shadow: 0 0 0 .22em #ffd54a; }
