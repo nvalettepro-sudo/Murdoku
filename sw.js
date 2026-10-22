@@ -1,5 +1,5 @@
 /* Murdoku — service worker : jeu jouable hors ligne après la première visite. */
-const CACHE = 'murdoku-v1';
+const CACHE = 'murdoku-v2';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/engine.js', './js/icons.js', './js/avatars.js', './js/board.js', './js/app.js',

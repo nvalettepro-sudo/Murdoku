@@ -39,13 +39,15 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 
 ## Fonctionnalités
 
-- **Placement** : touche une fiche suspect, puis une case. Touche un pion pour le retirer.
-- **Croix** : appui long ou clic droit sur une case. L'outil Croix permet aussi de glisser sur plusieurs cases.
+- **Placement** : touche une fiche suspect, puis une case. Le pion montre le visage du suspect et son initiale. Touche le pion pour le sélectionner, puis encore pour le retirer.
+- **Croix** : touche une case vide, fais un appui long ou un clic droit. Le bouton Croix permet aussi de glisser sur plusieurs cases.
+- **Croix automatiques** : quand un suspect est placé, les cases libres de sa rangée et de sa colonne reçoivent une croix claire. Les objets non occupables n'en reçoivent pas. Ce comportement se désactive dans les Options.
+- **Brouillon** : active le bouton, choisis un suspect et touche toutes ses cases possibles. Des vignettes apparaissent, jusqu'à 4 visibles par case. Un appui long sur une vignette la transforme en vrai pion.
 - **Indice progressif** : le premier appui désigne qui regarder, le deuxième montre les cases possibles, le troisième place le pion.
 - **Vérifier** : signale les pions mal placés.
 - **Annuler et rétablir**, chronomètre, et sauvegarde automatique sur l'appareil.
-- **Options** : griser les rangées et colonnes occupées, et signaler les indices non respectés.
-- **Clavier** : l'initiale d'un suspect le sélectionne, les touches 1, 2 et 3 choisissent l'outil, Ctrl+Z annule.
+- **Options** : activer ou non les croix automatiques, signaler les indices non respectés, afficher le chronomètre.
+- **Clavier** : l'initiale d'un suspect le sélectionne. La touche 1 revient au mode normal, 2 active Croix, 3 active Brouillon. Ctrl+Z annule.
 
 ## Structure
 

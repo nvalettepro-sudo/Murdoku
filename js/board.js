@@ -291,6 +291,32 @@
       '<text x="50" y="73" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="30" fill="#ffffff" stroke="' + O + '" stroke-width="1.2" paint-order="stroke">' + esc(letter) + '</text>' + (extra || '');
   }
 
+  /**
+   * Pion « portrait » : visage du personnage dans un carré, avec son initiale dans une pastille.
+   * Dessiné dans un repère 100 × 100 (une case).
+   */
+  function portraitPawn(P, i, extra) {
+    const A = root.MurdokuAvatars;
+    const p = P.people[i];
+    const color = pawnColor(P, i);
+    P._tiles = P._tiles || [];
+    if (!P._tiles[i]) {
+      P._tiles[i] = A.avatar(p.look, { tile: true })
+        .replace('<svg ', '<svg x="13" y="11" width="74" height="74" preserveAspectRatio="xMidYMin slice" ');
+    }
+    return '<rect x="9" y="10" width="86" height="86" rx="10" fill="rgba(20,15,40,.28)"/>' +
+      '<rect x="6" y="6" width="86" height="86" rx="10" fill="#ffffff" stroke="' + color + '" stroke-width="6"/>' +
+      P._tiles[i] +
+      '<rect x="13" y="11" width="74" height="74" fill="none" stroke="' + O + '" stroke-width="2.5"/>' +
+      // pastille plus grande sur les grandes grilles pour rester lisible
+      (P.N >= 11
+        ? '<circle cx="74" cy="74" r="25" fill="' + color + '" stroke="' + O + '" stroke-width="4"/>' +
+          '<text x="74" y="86" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="34" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>'
+        : '<circle cx="80" cy="80" r="17" fill="' + color + '" stroke="' + O + '" stroke-width="3.5"/>' +
+          '<text x="80" y="88.5" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="23" fill="#ffffff">' + esc(p.name[0].toUpperCase()) + '</text>') +
+      (extra || '');
+  }
+
   function pawnColor(P, i) {
     return i === P.victim ? VICTIM_PAWN : PAWN[i % PAWN.length];
   }
@@ -299,17 +325,6 @@
   function dynamicLayer(P, st) {
     const N = P.N, s = S / N;
     let out = '';
-    // rangées / colonnes occupées grisées
-    if (st.shade) {
-      const rows = {}, cols = {};
-      st.pos.forEach(function (k) { if (k >= 0) { rows[Math.floor(k / N)] = true; cols[k % N] = true; } });
-      let p = '';
-      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
-        const k = r * N + c;
-        if ((rows[r] || cols[c]) && st.pos.indexOf(k) < 0) p += 'M' + c * s + ' ' + r * s + 'h' + s + 'v' + s + 'h-' + s + 'z';
-      }
-      if (p) out += '<path d="' + p + '" fill="rgba(40,30,70,.16)"/>';
-    }
     // cases mises en évidence (aide)
     (st.highlight || []).forEach(function (k) {
       const r = Math.floor(k / N), c = k % N;
@@ -320,15 +335,56 @@
       const r = Math.floor(st.hover / N), c = st.hover % N;
       out += '<rect x="' + c * s + '" y="' + r * s + '" width="' + s + '" height="' + s + '" fill="rgba(255,255,255,.22)" stroke="rgba(255,255,255,.9)" stroke-width="' + Math.max(2, s * 0.03) + '"/>';
     }
-    // croix
+    // croix : automatiques (claires, autour des suspects placés) puis manuelles (foncées)
     const xw = Math.max(4, s * 0.09);
+    function crossPath(k, m) {
+      const r = Math.floor(k / N), c = k % N;
+      return 'M' + (c * s + m) + ' ' + (r * s + m) + 'L' + ((c + 1) * s - m) + ' ' + ((r + 1) * s - m) +
+        'M' + ((c + 1) * s - m) + ' ' + (r * s + m) + 'L' + (c * s + m) + ' ' + ((r + 1) * s - m);
+    }
+    const auto = {};
+    if (st.autoCross) {
+      const rows = {}, cols = {};
+      st.pos.forEach(function (k) { if (k >= 0) { rows[Math.floor(k / N)] = true; cols[k % N] = true; } });
+      let d = '';
+      for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const k = r * N + c;
+        if (!(rows[r] || cols[c])) continue;
+        if (st.pos.indexOf(k) >= 0 || P.blocked[k] || (st.crosses && st.crosses[k])) continue; // option 1 : pas de croix sur les objets
+        auto[k] = true;
+        d += crossPath(k, s * 0.28);
+      }
+      if (d) out += '<path class="xauto" d="' + d + '" stroke="' + (st.autoCrossColor || '#97a0c6') + '" stroke-width="' + (xw * 0.62).toFixed(1) + '" stroke-linecap="round" opacity=".9"/>';
+    }
+    let dm = '';
     Object.keys(st.crosses || {}).forEach(function (key) {
-      const k = +key;
-      if (!st.crosses[key]) return;
-      const r = Math.floor(k / N), c = k % N, m = s * 0.24;
-      const col = st.crossColor || '#3a3a6a';
-      out += '<path d="M' + (c * s + m) + ' ' + (r * s + m) + 'L' + ((c + 1) * s - m) + ' ' + ((r + 1) * s - m) + 'M' + ((c + 1) * s - m) + ' ' + (r * s + m) + 'L' + (c * s + m) + ' ' + ((r + 1) * s - m) + '" stroke="#ffffff" stroke-width="' + (xw + 4) + '" stroke-linecap="round" opacity=".75"/>' +
-        '<path d="M' + (c * s + m) + ' ' + (r * s + m) + 'L' + ((c + 1) * s - m) + ' ' + ((r + 1) * s - m) + 'M' + ((c + 1) * s - m) + ' ' + (r * s + m) + 'L' + (c * s + m) + ' ' + ((r + 1) * s - m) + '" stroke="' + col + '" stroke-width="' + xw + '" stroke-linecap="round"/>';
+      if (st.crosses[key]) dm += crossPath(+key, s * 0.24);
+    });
+    if (dm) {
+      out += '<path d="' + dm + '" stroke="#ffffff" stroke-width="' + (xw + 4) + '" stroke-linecap="round" opacity=".75"/>' +
+        '<path class="xman" d="' + dm + '" stroke="' + (st.crossColor || '#3a3a6a') + '" stroke-width="' + xw + '" stroke-linecap="round"/>';
+    }
+    // vignettes de brouillon (hypothèses) : jusqu'à 4 par case, en 2 × 2
+    Object.keys(st.notes || {}).forEach(function (key) {
+      const k = +key, l = st.notes[key] || [];
+      if (!l.length || st.pos.indexOf(k) >= 0) return;
+      const r = Math.floor(k / N), c = k % N;
+      const show = l.length > 4 ? l.slice(0, 3) : l;
+      const q = s / 2, pad = s * 0.05, w = q - pad * 1.6;
+      const dim = auto[k] || (st.crosses && st.crosses[k]) ? ' opacity=".45"' : '';
+      out += '<g class="note"' + dim + '>';
+      show.forEach(function (i, j) {
+        const x = c * s + (j % 2) * q + pad, y = r * s + Math.floor(j / 2) * q + pad;
+        const sel = st.selected === i;
+        out += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + w.toFixed(1) + '" rx="' + (w * 0.22).toFixed(1) + '" fill="' + pawnColor(P, i) + '" stroke="' + (sel ? '#ffd54a' : '#ffffff') + '" stroke-width="' + Math.max(1.5, w * (sel ? 0.12 : 0.07)).toFixed(1) + '" stroke-dasharray="' + (sel ? 'none' : (w * 0.18).toFixed(1) + ' ' + (w * 0.1).toFixed(1)) + '"/>' +
+          '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y + w * 0.73).toFixed(1) + '" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="' + (w * 0.64).toFixed(1) + '" fill="#ffffff">' + esc(P.people[i].name[0].toUpperCase()) + '</text>';
+      });
+      if (l.length > 4) {
+        const x = c * s + q + pad, y = r * s + q + pad;
+        out += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + w.toFixed(1) + '" rx="' + (w * 0.22).toFixed(1) + '" fill="#ffffff" stroke="' + O + '" stroke-width="' + Math.max(1.5, w * 0.06).toFixed(1) + '"/>' +
+          '<text x="' + (x + w / 2).toFixed(1) + '" y="' + (y + w * 0.7).toFixed(1) + '" text-anchor="middle" font-family="Rubik, Arial, sans-serif" font-weight="800" font-size="' + (w * 0.5).toFixed(1) + '" fill="' + O + '">+' + (l.length - 3) + '</text>';
+      }
+      out += '</g>';
     });
     // pions
     st.pos.forEach(function (k, i) {
@@ -337,17 +393,18 @@
       const p = P.people[i];
       const mark = st.marks && st.marks[i];
       let ring = '';
-      if (mark === 'bad') ring = '<circle cx="50" cy="52" r="46" fill="none" stroke="#e53935" stroke-width="7" stroke-dasharray="10 6"/>';
-      if (mark === 'good') ring = '<circle cx="50" cy="52" r="46" fill="none" stroke="#2e9e4f" stroke-width="6"/>';
-      const sel = st.selected === i ? '<circle cx="50" cy="52" r="47" fill="rgba(255,255,255,.35)" stroke="#ffd54a" stroke-width="7"/>' : '';
-      const knife = st.solved && st.culprit === i ? '<g transform="translate(70,10) rotate(25)"><path d="M0 0 L6 0 L6 34 L3 40 L0 34 Z" fill="#e8eef2" stroke="' + O + '" stroke-width="2.5"/><rect x="-3" y="34" width="12" height="5" fill="#5a4a3a" stroke="' + O + '" stroke-width="2"/></g>' : '';
-      out += '<g class="pawn" data-i="' + i + '" transform="translate(' + c * s + ',' + r * s + ') scale(' + s / 100 + ')">' + sel + ring + pawnSvg(pawnColor(P, i), p.name[0].toUpperCase(), knife) + '</g>';
+      if (mark === 'bad') ring = '<rect x="2" y="2" width="94" height="94" rx="13" fill="none" stroke="#e53935" stroke-width="7" stroke-dasharray="12 7"/>';
+      if (mark === 'good') ring = '<rect x="2" y="2" width="94" height="94" rx="13" fill="none" stroke="#2e9e4f" stroke-width="6"/>';
+      const sel = st.selected === i ? '<rect x="2" y="2" width="94" height="94" rx="13" fill="none" stroke="#ffd54a" stroke-width="7"/>' : '';
+      const knife = st.solved && st.culprit === i ? '<g transform="translate(74,2) rotate(25)"><path d="M0 0 L6 0 L6 34 L3 40 L0 34 Z" fill="#e8eef2" stroke="' + O + '" stroke-width="2.5"/><rect x="-3" y="34" width="12" height="5" fill="#5a4a3a" stroke="' + O + '" stroke-width="2"/></g>' : '';
+      void p;
+      out += '<g class="pawn" data-i="' + i + '" transform="translate(' + c * s + ',' + r * s + ') scale(' + s / 100 + ')">' + portraitPawn(P, i, knife) + ring + sel + '</g>';
     });
     return out;
   }
 
   root.MurdokuBoard = {
     SIZE: S, PAD: PAD, staticLayer: staticLayer, dynamicLayer: dynamicLayer,
-    pawnSvg: pawnSvg, pawnColor: pawnColor, esc: esc
+    pawnSvg: pawnSvg, portraitPawn: portraitPawn, pawnColor: pawnColor, esc: esc
   };
 })(typeof window !== 'undefined' ? window : this);
