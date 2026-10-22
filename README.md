@@ -49,11 +49,32 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 - **Options** : activer ou non les croix automatiques, signaler les indices non respectés, afficher le chronomètre.
 - **Clavier** : l'initiale d'un suspect le sélectionne. La touche 1 revient au mode normal, 2 active Croix, 3 active Brouillon. Ctrl+Z annule.
 
+## Aperçus avant mise en ligne
+
+Chaque PR ouverte est publiée à sa propre adresse, par exemple :
+`https://nvalettepro-sudo.github.io/Murdoku/preview/pr-3/`
+
+- Le lien est posté automatiquement en commentaire de la PR.
+- L'aperçu se met à jour après chaque modification de la PR, une fois les tests passés.
+- Il affiche une étiquette « Aperçu PR #n » en bas de l'accueil.
+- Ses sauvegardes sont séparées de celles du site officiel.
+
+C'est le workflow `.github/workflows/pages.yml` qui publie le site. Il faut un réglage unique dans GitHub : **Settings → Pages → Source → GitHub Actions**.
+
+## Versions
+
+Le numéro de version et la date s'affichent en bas de l'accueil et à la fin des Options, avec l'historique des versions.
+Ils sont définis dans `js/version.js`. À chaque mise à jour :
+1. Incrémente `VERSION`, mets la `DATE` du jour et ajoute une ligne en tête de `HISTORY`.
+2. Reporte le même numéro dans `CACHE` de `sw.js`. Les iPad téléchargent alors la nouvelle version.
+3. Lance `node tests/check-version.js`. La CI le lance aussi.
+
 ## Structure
 
 ```
 index.html            page unique
 css/style.css         styles (thèmes classique et famille)
+js/version.js         numéro de version, date et historique
 js/engine.js          moteur logique : règles, solveur, unicité, aide
 js/icons.js           icônes SVG des objets
 js/avatars.js         portraits SVG des suspects

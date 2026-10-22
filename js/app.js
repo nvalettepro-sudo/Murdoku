@@ -5,7 +5,13 @@
   const esc = B.esc;
   const PUZZLES = (window.MURDOKU_PUZZLES || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
   const SOLUTIONS = window.MURDOKU_SOLUTIONS || {};
-  const KEY = 'murdoku:v1:';
+  // Les aperçus de PR (…/preview/pr-N/) ont leurs propres sauvegardes, séparées du site officiel
+  const PREVIEW = (location.pathname.match(/\/preview\/(pr-\d+)\//) || [])[1] || null;
+  const KEY = PREVIEW ? 'murdoku:' + PREVIEW + ':' : 'murdoku:v1:';
+  const VER = window.MURDOKU_VERSION || { VERSION: '?', DATE: '', HISTORY: [] };
+  // Date au format français (2026-10-22 → 22/10/2026)
+  function frDate(iso) { const a = String(iso).split('-'); return a.length === 3 ? a[2] + '/' + a[1] + '/' + a[0] : iso; }
+  function versionLabel() { return 'Version ' + VER.VERSION + ' du ' + frDate(VER.DATE); }
   const app = document.getElementById('app');
 
   // ---------- stockage local (protégé : peut être indisponible) ----------
@@ -134,7 +140,7 @@
       });
       html += '</div></section>';
     });
-    html += '<footer class="home-foot">Murdoku est un jeu créé par Manuel Garand (énigmes et concept). ' +
+    html += '<footer class="home-foot"><p class="version"><b>' + esc(versionLabel()) + '</b>' + (PREVIEW ? ' · <span class="preview-tag">Aperçu ' + esc(PREVIEW.replace('pr-', 'PR #')) + '</span>' : '') + '</p>Murdoku est un jeu créé par Manuel Garand (énigmes et concept). ' +
       'Les illustrations des fiches originales sont de Manuel Garand, Valentyna Bezdushna et Eli Voisin ; le golf et les îles sont de Craig Wallander. ' +
       'Cette adaptation web en français est non officielle, réalisée pour un usage personnel : ' +
       'les visuels sont redessinés. Retrouve le jeu officiel sur <a href="https://murdoku.com" target="_blank" rel="noopener">murdoku.com</a>.</footer></main>';
@@ -1014,10 +1020,13 @@
     const m = openModal('<h2>Options</h2>' + rows.map(function (r) {
       return '<div class="row"><div><b>' + r[1] + '</b><br><span style="font-size:15px;color:#666">' + r[2] + '</span></div>' +
         '<label class="switch"><input type="checkbox" data-k="' + r[0] + '"' + (settings[r[0]] ? ' checked' : '') + ' aria-label="' + esc(r[1]) + '"><span></span></label></div>';
-    }).join('') + '<h3>Commandes</h3><ul>' +
+    }).join('') + '<h3>Commandes</h3>' +
       gesturesHtml() +
       '<ul><li><b>Clavier :</b> initiale d’un suspect pour le sélectionner, 1 = normal, 2 = Croix, 3 = Brouillon, Ctrl+Z pour annuler, ? pour un indice.</li></ul>' +
-      '<h3>Progression</h3><p><button class="pill-btn" data-x="wipe">Effacer toute ma progression</button></p>');
+      '<h3>Progression</h3><p><button class="pill-btn" data-x="wipe">Effacer toute ma progression</button></p>' +
+      '<h3>' + esc(versionLabel()) + '</h3><ul class="history">' + VER.HISTORY.map(function (h2) {
+        return '<li><b>' + esc(h2.v) + '</b> (' + esc(frDate(h2.d)) + ') : ' + esc(h2.t) + '</li>';
+      }).join('') + '</ul>');
     m.querySelectorAll('input[data-k]').forEach(function (inp) {
       inp.addEventListener('change', function () {
         settings[inp.dataset.k] = inp.checked;
