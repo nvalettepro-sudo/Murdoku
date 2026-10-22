@@ -28,6 +28,11 @@ async function play(browser, ctxOpts, id, label) {
   page.on('console', m => { if (m.type() === 'error' && !/404/.test(m.text())) errors.push(m.text()); });
   await page.goto(base + '#/p/' + id);
   await page.waitForSelector('svg.board');
+  if (await page.locator('[data-act="hint"], [data-act="check"]').count()) errors.push('Indice/Vérifier doivent être masqués par défaut');
+  await page.evaluate(() => localStorage.setItem('murdoku:v1:settings', JSON.stringify({ showHint: true, showCheck: true })));
+  await page.reload();
+  await page.waitForSelector('svg.board');
+  if (await page.locator('[data-act="hint"]').count() !== 1 || await page.locator('[data-act="check"]').count() !== 1) errors.push('Indice/Vérifier absents après activation');
   // pose des pions selon la solution
   const sol = def.solution.split(' ').map(t => { const [n, rc] = t.split(':'); const [r, c] = rc.split(',').map(Number); return { n, r, c }; });
   // une croix d'abord (appui long simulé par l'outil Croix), puis effacement
