@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.6',
+    VERSION: '1.7',
     DATE: '2026-10-22',
     HISTORY: [
+      { v: '1.7', d: '2026-10-22', t: 'Indices reformulés sans ambiguïté : « seul » précise « dans sa zone », « au nord » précise « sur une rangée plus haute » ou « juste au-dessus », etc.' },
       { v: '1.6', d: '2026-10-22', t: 'Bandeau « Le meurtrier est… » supprimé. Résumé de fin à gauche, au-dessus des suspects : portraits du meurtrier et de la victime, avec l’explication. La grille reste visible.' },
       { v: '1.5', d: '2026-10-22', t: 'Menu : Quick guide en 3 points qui résume les règles du jeu et la manière de jouer dans cette version.' },
       { v: '1.4', d: '2026-10-22', t: 'Boutons Indice et Vérifier masqués par défaut (activables dans les Options). Le portrait d’un suspect placé sur la grille est grisé dans la liste.' },

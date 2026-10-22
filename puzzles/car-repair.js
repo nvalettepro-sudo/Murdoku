@@ -42,7 +42,7 @@
       look: { skin: '#f0c4a0', hair: 'long', hairColor: '#9a5b3c', glasses: true, bg: '#a7d3dc', shirt: '#8a4f9c' } },
     { id: 'E', name: 'Emilio', gender: 'm', clue: "Il était à côté d'une **étagère**.", rule: "beside('shelf')",
       look: { skin: '#e9b48e', hair: 'buzz', hairColor: '#f0f0f0', beard: 'goatee', beardColor: '#f5f5f5', bg: '#8d7aa0', shirt: '#3b4a7a' } },
-    { id: 'V', name: 'Vaughn', gender: 'm', victim: true, clue: '**La victime.** Il était seul avec le meurtrier.',
+    { id: 'V', name: 'Vaughn', gender: 'm', victim: true, clue: "**La victime.** Dans sa zone, il n'y avait que lui et le meurtrier.",
       look: { skin: '#f0c49f', hair: 'side', hairColor: '#b9b08a', beard: 'mustache', beardColor: '#8f8462', bg: '#9b4c55', shirt: '#4b4b5a' } }
   ],
   expected: 'Crystal',

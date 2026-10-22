@@ -55,9 +55,9 @@
       look: { skin: '#7a4a32', hair: 'side', hairColor: '#1d1a1a', beard: 'full', beardColor: '#1d1a1a', bg: '#8ad0c0', shirt: '#4a8a7a' } },
     { id: 'G', name: 'Gilbert', gender: 'm', clue: 'Il était dans le **Jardin**.', rule: "inArea('G')",
       look: { skin: '#e8b48a', hair: 'cowboy', hairColor: '#d8a040', beard: 'goatee', beardColor: '#eeeeee', bg: '#c8b890', shirt: '#6a8a4a' } },
-    { id: 'H', name: 'Holden', gender: 'm', clue: 'Il était **seul**.', rule: 'alone()',
+    { id: 'H', name: 'Holden', gender: 'm', clue: 'Il était **seul** dans sa **zone**.', rule: 'alone()',
       look: { skin: '#f0b49a', hair: 'side', hairColor: '#b07a5a', bg: '#f6f6f6', shirt: '#6a3a2a' } },
-    { id: 'V', name: 'Violet', gender: 'f', victim: true, clue: '**La victime.** Elle était seule avec le meurtrier.',
+    { id: 'V', name: 'Violet', gender: 'f', victim: true, clue: "**La victime.** Dans sa zone, il n'y avait qu'elle et le meurtrier.",
       look: { skin: '#f0c49f', hair: 'curly', hairColor: '#f6f6f6', bg: '#c43a3a', shirt: '#9a5a8a' } }
   ],
   expected: 'Carissa',

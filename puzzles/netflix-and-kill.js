@@ -41,7 +41,7 @@
       look: { skin: '#9a6a48', hair: 'buzz', hairColor: '#24242c', bg: '#7fb7c9', shirt: '#ffffff' } },
     { id: 'E', name: 'Enid', gender: 'f', clue: "Elle était à côté de la **télé**.", rule: "beside('tv')",
       look: { skin: '#f0bf9c', hair: 'curly', hairColor: '#9a5fb5', bg: '#7fb7c9', shirt: '#b98ad0' } },
-    { id: 'V', name: 'Vaughn', gender: 'm', victim: true, clue: '**La victime.** Il était seul avec le meurtrier.',
+    { id: 'V', name: 'Vaughn', gender: 'm', victim: true, clue: "**La victime.** Dans sa zone, il n'y avait que lui et le meurtrier.",
       look: { skin: '#d9a17e', hair: 'wavy', hairColor: '#2a2226', bg: '#c4574a', shirt: '#8f8fae' } }
   ],
   expected: 'Barbara',
