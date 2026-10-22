@@ -188,13 +188,13 @@
       W: 1500, H: 1000,
       brand: [28, 18, 410, 196], rules3: [452, 24, 1024, 166], legend: [850, 198, 626, 82],
       board: [850, 290, 626, 626], suspects: [24, 222, 808, 682], detail: [24, 836, 808, 66],
-      toolbar: [24, 922, 808, 70], culprit: [850, 926, 372, 66], topbtns: [1234, 926, 242, 66]
+      toolbar: [24, 922, 808, 70], result: [24, 222, 808, 692], topbtns: [1234, 926, 242, 66]
     },
     portrait: {
       W: 1000, H: 1420,
       brand: [26, 16, 600, 168], topbtns: [640, 24, 336, 66], rules3: [26, 190, 950, 154], legend: [26, 354, 950, 78],
       board: [195, 442, 610, 610], suspects: [26, 1062, 950, 200], detail: [26, 1268, 950, 62],
-      toolbar: [26, 1340, 620, 72], culprit: [658, 1340, 318, 72]
+      toolbar: [26, 1340, 620, 72], result: [26, 1062, 950, 270]
     }
   };
 
@@ -280,8 +280,8 @@
       (settings.showHint ? actBtn('hint', 'Indice', UI.hint, 'sep') : '') +
       (settings.showCheck ? actBtn('check', 'Vérifier', UI.check, settings.showHint ? '' : 'sep') : '') +
       actBtn('reset', 'Effacer', UI.reset, settings.showHint || settings.showCheck ? '' : 'sep') +
+      '<button class="tool result-btn" data-act="result" title="Résultat" hidden>' + UI.grid + '<span>Résultat</span></button>' +
       (settings.timer && cur.orient === 'landscape' ? '<span class="timer" aria-label="Temps">' + fmtTime(cur.st.time) + '</span>' : '') + '</section>';
-    html += '<section class="region culprit" style="' + box(L.culprit) + '" role="button" tabindex="0"></section>';
     html += '<nav class="region topbtns" style="' + box(L.topbtns) + '">' + actBtn('home', 'Menu', UI.grid) + actBtn('rules', 'Règles', UI.help) + actBtn('settings', 'Options', UI.gear) + '</nav>';
     html += '</div></div>';
     app.innerHTML = html;
@@ -532,14 +532,9 @@
   }
 
   function renderCulprit() {
-    const el = cur.stage.querySelector('.culprit');
-    let name = '';
-    if (cur.st.solved) {
-      const c = E.culpritOf(cur.P, cur.st.pos);
-      name = c >= 0 ? cur.P.people[c].name : '';
-    }
-    el.classList.toggle('found', !!name);
-    el.innerHTML = '<span class="q">Le meurtrier est…</span><span class="line">' + esc(name) + '</span>';
+    const btn = cur.stage.querySelector('.result-btn');
+    if (btn) btn.hidden = !cur.st.solved;
+    if (!cur.st.solved) hideWin();
   }
 
   function updateButtons() {
@@ -862,15 +857,12 @@
         else if (a === 'home') location.hash = '#/';
         else if (a === 'rules') showRules();
         else if (a === 'settings') showSettings();
+        else if (a === 'result') showWin();
       });
     });
     stage.querySelector('.suspects').addEventListener('click', function (e) {
       const c = e.target.closest('.card');
       if (c) selectPerson(+c.dataset.i);
-    });
-    stage.querySelector('.culprit').addEventListener('click', function () {
-      if (cur.st.solved) showWin();
-      else toast('Place tout le monde sur la grille pour démasquer le coupable.');
     });
     bindBoard();
   }
@@ -1008,22 +1000,41 @@
     m.querySelector('[data-x="ok"]').addEventListener('click', function () { closeModal(); onOk(); });
   }
 
+  function hideWin() {
+    const w = document.querySelector('.stage .winpanel');
+    if (w) w.remove();
+  }
+
+  // Résumé de fin : meurtrier, victime et raison, affiché à gauche, au-dessus des suspects (la grille reste visible)
   function showWin() {
     const P = cur.P, def = cur.def;
-    const c = E.culpritOf(P, cur.st.pos);
-    const p = c >= 0 ? P.people[c] : null;
-    const idx = PUZZLES.indexOf(def);
-    const next = PUZZLES[idx + 1];
-    const m = openModal('<div class="win"><h2>Le meurtrier a été démasqué !</h2>' +
-      '<p>Voici où se trouvait chaque personne. Le meurtrier est…</p>' +
-      (p ? '<div class="portrait">' + A.avatar(p.look) + '</div><div class="big">' + esc(p.name) + '</div>' : '') +
-      '<p>Temps : <b>' + fmtTime(cur.st.time) + '</b></p><div class="actions">' +
-      '<button class="pill-btn" data-x="see">Voir la grille</button>' +
+    const c = E.culpritOf(P, cur.st.pos), v = P.victim;
+    if (c < 0 || v < 0) return;
+    hideWin();
+    const kill = P.people[c], vic = P.people[v];
+    const zoneOf = function (i) { const a = def.areas[P.area[cur.st.pos[i]]]; return a ? a.name : ''; };
+    const zone = zoneOf(v);
+    const others = P.people.map(function (q, i) { return i; }).filter(function (i) { return i !== c && i !== v; });
+    const idx = PUZZLES.indexOf(def), next = PUZZLES[idx + 1];
+    const f = vic.gender === 'f' ? 'e' : '';
+    const because = '<p class="why"><b>' + esc(kill.name) + '</b> est le meurtrier, car ' + esc(kill.name) + ' était <b>seul' + (kill.gender === 'f' ? 'e' : '') + ' avec la victime</b>. ' +
+      esc(vic.name) + ' a été retrouvé' + f + ' dans la zone « ' + esc(zone) + ' », et ' + esc(kill.name) + ' est la seule autre personne de cette zone.</p>' +
+      (others.length ? '<p class="why2">Les autres étaient ailleurs : ' + others.map(function (i) { return esc(P.people[i].name) + ' (' + esc(zoneOf(i)) + ')'; }).join(', ') + '.</p>' : '') +
+      (kill.clue ? '<p class="why2">Son indice : « ' + md(kill.clue) + ' »</p>' : '');
+    const box2 = function (cls, label, q, v2) {
+      return '<div class="who ' + cls + '"><span class="lab">' + label + '</span><div class="portrait">' + A.avatar(q.look, v2 ? { victim: true } : {}) + '</div><div class="nm">' + esc(q.name) + '</div></div>';
+    };
+    const el = h('<section class="region winpanel" style="' + box(LAYOUT[cur.orient].result) + '">' +
+      '<h2>Le meurtrier est démasqué !</h2>' +
+      '<div class="body"><div class="duo">' + box2('killer', 'Le meurtrier', kill, false) + box2('victim', 'La victime', vic, true) + '</div>' +
+      '<div class="txt">' + because + '<p class="time">Résolu en <b>' + fmtTime(cur.st.time) + '</b></p></div></div>' +
+      '<div class="actions"><button class="pill-btn" data-x="hide">Voir les suspects</button>' +
       (next ? '<button class="pill-btn btn-primary" data-x="next">Énigme suivante</button>' : '') +
-      '<button class="pill-btn" data-x="home">Toutes les énigmes</button></div></div>');
-    m.querySelector('[data-x="see"]').addEventListener('click', closeModal);
-    if (next) m.querySelector('[data-x="next"]').addEventListener('click', function () { closeModal(); location.hash = '#/p/' + next.id; });
-    m.querySelector('[data-x="home"]').addEventListener('click', function () { closeModal(); location.hash = '#/'; });
+      '<button class="pill-btn" data-x="home">Menu</button></div></section>');
+    cur.stage.appendChild(el);
+    el.querySelector('[data-x="hide"]').addEventListener('click', hideWin);
+    if (next) el.querySelector('[data-x="next"]').addEventListener('click', function () { location.hash = '#/p/' + next.id; });
+    el.querySelector('[data-x="home"]').addEventListener('click', function () { location.hash = '#/'; });
   }
 
   function showSettings() {
@@ -1078,7 +1089,7 @@
         'Active <b>Brouillon</b>, choisis un suspect, puis touche toutes ses cases possibles : une vignette apparaît dans chacune, avec autant de suspects que tu veux. Elles ne bloquent rien. Un <b>appui long</b> sur une vignette la transforme en vrai pion, et les autres vignettes de ce suspect disparaissent.') +
       pair('5. Trouver le meurtrier',
         'Le meurtrier était <b>seul avec la victime</b>, dans la même zone. On le trouve à la fin, une fois tout le monde placé.',
-        'Quand la grille est juste, l’écran de victoire s’ouvre et le nom du meurtrier s’inscrit dans l’encart « Le meurtrier est… ». Une grille complète mais fausse t’indique combien de positions sont correctes.') +
+        'Quand la grille est juste, un résumé s’affiche à gauche, au-dessus des suspects : le meurtrier, la victime et la raison. Le bouton Résultat le rouvre. Une grille complète mais fausse t’indique combien de positions sont correctes.') +
       '<h3>Se faire aider</h3><ul>' +
       '<li><b>Indice</b> : 1er appui, la personne à regarder ; 2e appui, ses cases possibles ; 3e appui, le placement.</li>' +
       '<li><b>Vérifier</b> entoure les pions mal placés. <b>Annuler</b> et <b>Rétablir</b> remontent dans tes actions. <b>Effacer</b> vide la grille.</li>' +
