@@ -275,3 +275,6 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 4px s
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+.home-foot .version { margin: 0 0 6px; font-family: var(--font-sans); font-size: 15px; }
+.modal .history li { margin-bottom: 4px; font-size: 15px; }
