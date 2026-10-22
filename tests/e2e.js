@@ -76,9 +76,13 @@ async function play(browser, ctxOpts, id, label) {
     await page.click('.card[data-i="' + i + '"]');
     await tapCell(page, def.size, p.r, p.c);
   }
-  await page.waitForSelector('.modal .win', { timeout: 5000 }).catch(() => errors.push('pas d’écran de victoire'));
-  const winner = await page.locator('.modal .big').textContent().catch(() => '');
+  await page.waitForSelector('.winpanel', { timeout: 5000 }).catch(() => errors.push('pas d’écran de victoire'));
+  const winner = await page.locator('.winpanel .who.killer .nm').textContent().catch(() => '');
   const ok = winner === def.expected;
+  // le panneau ne doit pas masquer la grille
+  const ov = await page.evaluate(() => { const a = document.querySelector('.winpanel').getBoundingClientRect(), b = document.querySelector('svg.board').getBoundingClientRect(); return !(a.right <= b.left + 1 || a.left >= b.right - 1 || a.bottom <= b.top + 1 || a.top >= b.bottom - 1); });
+  if (ov) errors.push('le panneau de victoire recouvre la grille');
+  if (await page.locator('.culprit').count()) errors.push('bandeau « Le meurtrier est » encore présent');
   if (!ok) errors.push('coupable affiché « ' + winner + ' », attendu « ' + def.expected + ' »');
   await page.screenshot({ path: path.join(process.env.SHOTS || '/tmp', 'e2e-' + id + '-' + label + '.png') });
   await ctx.close();
