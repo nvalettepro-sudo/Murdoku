@@ -47,7 +47,7 @@
   people: [
     { id: 'A', name: 'Arthur', gender: 'm', clue: 'Il était au **Banc du juge**.', rule: "inArea('J')",
       look: { skin: '#f0c49f', hair: 'side', hairColor: '#c8c8c8', glasses: true, bg: '#a8a8b8', shirt: '#2a2a3a' } },
-    { id: 'B', name: 'Benjamin', gender: 'm', clue: 'Il était **avec la seule** personne **assise** sur une **chaise**.', rule: "exists(q => q.area === me.area && q.onlyOn('chair'))",
+    { id: 'B', name: 'Benjamin', gender: 'm', clue: 'Il était dans la **même zone** que la **seule** personne de toute la grille **assise** sur une **chaise**.', rule: "exists(q => q.area === me.area && q.onlyOn('chair'))",
       look: { skin: '#8a5a3c', hair: 'side', hairColor: '#1d1a1a', glasses: true, bg: '#4a5a7a', shirt: '#2a2a3a' } },
     { id: 'C', name: 'Camila', gender: 'f', clue: 'Elle était dans le **Public**.', rule: "inArea('G')",
       look: { skin: '#f0c49f', hair: 'ponytail', hairColor: '#9a6a5a', bg: '#fbf0d0', shirt: '#9a8ab0' } },
@@ -61,7 +61,7 @@
       look: { skin: '#8a5a3c', hair: 'bald', hairColor: '#8a5a3c', beard: 'goatee', beardColor: '#1d1a1a', bg: '#c8b8e0', shirt: '#2a2a3a' } },
     { id: 'H', name: 'Howard', gender: 'm', clue: "Il était à côté d'une **plante**.", rule: "beside('plant')",
       look: { skin: '#f0c49f', hair: 'side', hairColor: '#e8e8e8', beard: 'mustache', beardColor: '#e8e8e8', bg: '#b89a7a', shirt: '#f6f6f6' } },
-    { id: 'V', name: 'Vanessa', gender: 'f', victim: true, clue: '**La victime.** Elle était seule avec le meurtrier.',
+    { id: 'V', name: 'Vanessa', gender: 'f', victim: true, clue: "**La victime.** Dans sa zone, il n'y avait qu'elle et le meurtrier.",
       look: { skin: '#e8b48a', hair: 'long', hairColor: '#7a4a2a', glasses: true, bg: '#e88aa0', shirt: '#2a2a3a' } }
   ],
   expected: 'Fritz',

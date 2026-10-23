@@ -1,5 +1,7 @@
 # Murdoku — version web en français
 
+**Jouer : https://nvalettepro-sudo.github.io/Murdoku/**
+
 Adaptation web, non officielle, du jeu de logique **Murdoku** de Manuel Garand.
 Le jeu fonctionne sur iPad et sur PC, en paysage comme en portrait.
 Le but : lire les indices, placer chaque suspect sur la scène de crime et démasquer le meurtrier.
