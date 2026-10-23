@@ -288,7 +288,12 @@
     const k = 0.85, W = Math.round(vw / k), H = Math.round(vh / k);
     const m = 16, brandH = 88, legendH = 74, toolH = 70;
     const y1 = m + brandH + 10 + legendH + 12;
-    const B = Math.max(300, Math.min(W - 2 * m, H - y1 - 12 - 330 - toolH - 3 * m));
+    // Le plateau prend toute la largeur possible ; dessous, on ne garde que le strict minimum :
+    // deux rangées de petits portraits, la ligne d'information et, s'il y en a, le bandeau des règles spéciales.
+    const nNotes = cur && cur.def ? (cur.def.globals || []).filter(function (g) { return g.text; }).length : 0;
+    const nPeople = cur && cur.def ? cur.def.people.length : 12;
+    const reserve = (nPeople > 9 ? 190 : 130) + 68 + (nNotes ? 62 : 0); // 9 portraits tiennent sur une seule rangée
+    const B = Math.max(300, Math.min(W - 2 * m, H - m - toolH - 10 - reserve - y1 - 12));
     const sTop = y1 + B + 12, sAll = H - m - toolH - 10 - sTop, sH = sAll - 62 - 6; // le détail d'un suspect s'affiche sous les fiches
     return {
       key: 'compactp:' + vw + 'x' + vh, compact: true, k: k, minFs: 13,

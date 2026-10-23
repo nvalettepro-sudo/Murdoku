@@ -50,6 +50,10 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 - **Options** : activer ou non les croix automatiques, signaler les indices non respectés, afficher le chronomètre.
 - **Clavier** : l'initiale d'un suspect le sélectionne. La touche 1 revient au mode normal, 2 active Brouillon. Ctrl+Z annule.
 
+## Vérification des indices
+
+`docs/verification-traductions.md` compare, pour les 11 énigmes, le texte anglais des feuilles d'origine, le texte français affiché et la règle logique utilisée par le solveur. À relire à chaque nouvelle énigme.
+
 ## Petits écrans
 
 Sous 85 % de l'échelle de la scène standard (1500×1000 en paysage, 1000×1420 en portrait), le jeu passe en **mise en page compacte** : échelle fixe 0,8 (0,85 en portrait) aux dimensions de l'écran, plateau et fiches agrandis, sans les trois bulles de règles (elles restent dans « Règles » et le Menu). C'est le cas d'une tablette Android 10" comme la Galaxy Tab S10 Lite (≈ 1280×690 en Chrome ⚠️ estimation) ou d'un iPad Air. Sur téléphone en portrait (largeur < 600 px), une mise en page dédiée (échelle 0,75) place la légende sur deux lignes, le plateau en pleine largeur, les fiches en portraits seuls (l'indice s'affiche en touchant la fiche) et respecte les zones sûres de l'iPhone. Le test de bout en bout joue ces tailles.

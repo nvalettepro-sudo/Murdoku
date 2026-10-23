@@ -52,7 +52,7 @@
     { id: 'D', name: 'Delilah', gender: 'f', clue: "Une **autre femme** était **seule** dans la **Galerie**, sur la **rangée juste au-dessus** de Delilah.",
       rule: "exists(q => q.woman && q.area === 'G' && q.r === me.r - 1 && q.alone())",
       look: { skin: '#7a4a32', hair: 'long', hairColor: '#1d1a1a', glasses: true, bg: '#e88a7a', shirt: '#ffffff' } },
-    { id: 'E', name: 'Everly', gender: 'f', clue: "Elle était à côté d'un **chevalet**, placé **juste au-dessus** d'elle.", rule: "dirHas('n', 'easel')",
+    { id: 'E', name: 'Everly', gender: 'f', clue: "Il y avait un **chevalet** sur la case **juste au-dessus** d'elle, dans sa **zone**.", rule: "dirHas('n', 'easel')",
       look: { skin: '#f0c49f', hair: 'wavy', hairColor: '#f0f0f0', bg: '#a8a0d8', shirt: '#6a6a3a' } },
     { id: 'F', name: 'Fritz', gender: 'm', clue: 'Il était sur un **tapis**.', rule: "on('carpet')",
       look: { skin: '#e8b48a', hair: 'side', hairColor: '#5a5a6a', beard: 'goatee', beardColor: '#2a2a2a', bg: '#a8b8a0', shirt: '#6a6a6a' } },
