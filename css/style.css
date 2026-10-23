@@ -22,6 +22,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
+html { background: linear-gradient(115deg, var(--bg1, #5f9292), var(--bg2, #3b3f86)) fixed; }
 body {
   font-family: var(--font);
   color: var(--ink);
@@ -302,3 +303,26 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 .stage.compact-l .brand .diff { margin: 0; font-size: 19px; white-space: nowrap; align-self: end; padding-bottom: 2px; }
 .stage.compact-l .legend .lg h4 { font-size: 14px; }
 .stage.compact-l .toolbar .timer { font-size: 20px; padding: 5px 12px; min-width: 84px; }
+
+/* Téléphone (portrait) */
+.stage.phone .legend { flex-direction: column; gap: 6px; }
+.stage.phone .legend .lg { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; flex: none; width: 100%; border-radius: 26px; padding: 4px 14px; }
+.stage.phone .legend .lg h4 { margin: 0; font-size: 13px; line-height: 1.1; flex: none; width: 92px; text-align: left; }
+.stage.phone .legend .items { flex-wrap: wrap; justify-content: flex-start; gap: 4px 8px; }
+.stage.phone .legend .it { font-size: 10.5px; }
+.stage.phone .legend .it svg { width: 30px; height: 30px; }
+.stage.phone .legend .it svg.long { width: 46px; }
+.stage.phone .brand { display: block; }
+.stage.phone .brand .logo { display: none; }
+.stage.phone .brand h1 { margin: 0; font-size: 26px; line-height: 1.1; white-space: nowrap; }
+.stage.phone .brand .diff { margin: 2px 0 0; font-size: 17px; }
+.stage.phone .topbtns { gap: 6px; }
+.stage.phone .topbtns .tool { height: 60px; min-width: 70px; }
+.stage.phone .toolbar { gap: 5px; }
+.stage.phone .toolbar .tool { min-width: 0; }
+.stage.phone .detail .gl { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.stage.phone .detail .gl .note { position: relative; display: flex; align-items: center; background: var(--panel); border-radius: 20px; padding: 4px 12px 4px 40px; font-size: 14px; line-height: 1.15; min-height: 42px; }
+.stage.phone .detail .gl .note .num { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--outline); background: #fff; display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.stage.phone .detail { font-size: 17px; padding: 6px 14px; border-radius: 22px; }
+.stage.phone .detail .who { font-size: 19px; }
+.stage.phone .winpanel { overflow-y: auto; }

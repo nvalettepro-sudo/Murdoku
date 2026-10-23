@@ -1,5 +1,5 @@
 /* Murdoku — service worker : jeu jouable hors ligne après la première visite. */
-const CACHE = 'murdoku-1.11'; // = VERSION de js/version.js
+const CACHE = 'murdoku-1.12'; // = VERSION de js/version.js
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/version.js', './js/engine.js', './js/icons.js', './js/avatars.js', './js/board.js', './js/app.js',
