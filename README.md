@@ -55,7 +55,7 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 Chaque PR ouverte est publiée à sa propre adresse, par exemple :
 `https://nvalettepro-sudo.github.io/Murdoku/preview/pr-3/`
 
-- Le lien est posté automatiquement en commentaire de la PR.
+- Le lien se déduit du numéro de la PR. Aucun commentaire automatique n'est posté, donc aucun e-mail GitHub.
 - L'aperçu se met à jour après chaque modification de la PR, une fois les tests passés.
 - Il affiche une étiquette « Aperçu PR #n » en bas de l'accueil.
 - Ses sauvegardes sont séparées de celles du site officiel.
