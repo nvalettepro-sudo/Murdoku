@@ -120,8 +120,8 @@
   // =====================================================================
   function showHome() {
     cur = null;
-    document.body.style.setProperty('--bg1', '#5f9292');
-    document.body.style.setProperty('--bg2', '#3b3f86');
+    document.documentElement.style.setProperty('--bg1', '#5f9292');
+    document.documentElement.style.setProperty('--bg2', '#3b3f86');
     document.title = 'Murdoku — Menu';
     const groups = [{ title: 'Les enquêtes', items: PUZZLES }];
     let html = '<main class="home"><header class="home-head"><div>' + logoSvg() +
@@ -207,6 +207,23 @@
     }
   };
 
+  // Zones sûres (encoche, îlot dynamique, barre du bas de l'iPhone). Test : ajouter ?safe=haut,droite,bas,gauche à l'adresse.
+  function safeInsets() {
+    const q = /[?&]safe=(\d+),(\d+),(\d+),(\d+)/.exec(location.search);
+    if (q) return { t: +q[1], r: +q[2], b: +q[3], l: +q[4] };
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+    document.body.appendChild(d);
+    const cs = getComputedStyle(d);
+    const r = { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 };
+    document.body.removeChild(d);
+    return r;
+  }
+  function availSize() {
+    const i = safeInsets();
+    return { w: window.innerWidth - i.l - i.r, h: window.innerHeight - i.t - i.b, ins: i };
+  }
+
   function orientation() {
     return window.innerWidth / window.innerHeight < 0.92 ? 'portrait' : 'landscape';
   }
@@ -216,7 +233,8 @@
   // sans les trois bulles de règles (elles restent dans « Règles » et dans le Menu).
   const COMPACT_K = 0.8;
   function layoutFor(orient) {
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const av = availSize(), vw = av.w, vh = av.h;
+    if (orient === 'portrait' && vw < 600) return layoutPhone(vw, vh);
     if (orient === 'portrait' && Math.min(vw / 1000, vh / 1420) < 0.85) return layoutPortraitCompact(vw, vh);
     if (orient !== 'landscape' || Math.min(vw / 1500, vh / 1000) >= 0.85) return Object.assign({ key: orient }, LAYOUT[orient]);
     const W = Math.round(vw / COMPACT_K), H = Math.round(vh / COMPACT_K);
@@ -232,6 +250,26 @@
       W: W, H: H, brand: [m, m, Lw - 262, brandH], rules3: null, legend: [x0, m, B, legendH],
       board: [x0, m + legendH + gap, B, B], suspects: [m, sTop, Lw, sH], detail: [m, sTop + sH - 66, Lw, 66],
       toolbar: tool, result: [m, sTop - 14, Lw, sH + 14], topbtns: [m + Lw - 250, m + 6, 250, 66]
+    };
+  }
+
+  // Téléphone tenu verticalement : échelle fixe 0,75, plateau pleine largeur, légende sur deux lignes, fiches en portraits seuls.
+  function layoutPhone(vw, vh) {
+    const k = 0.75, W = Math.round(vw / k), H = Math.round(vh / k);
+    const m = 14, brandH = 58, toolH = 70;
+    const notes = cur && cur.def ? (cur.def.globals || []).filter(function (g) { return g.text; }).length : 0;
+    const dense = cur && cur.def && cur.def.people.length > 10;
+    const detH = notes ? 22 + 48 * notes : 66; // règles spéciales de l'énigme : affichées dans la boîte d'information
+    const legendH = (cur && cur.legendH) || 104;
+    const yLeg = m + brandH + 8, yB = yLeg + legendH + 8;
+    const B = Math.max(280, Math.min(W - 2 * m, dense ? 430 : 9999, H - yB - 8 - 200 - toolH - 2 * m));
+    const sTop = yB + B + 8, sAll = H - m - toolH - 8 - sTop, sH = sAll - detH - 4;
+    return {
+      key: 'phone:' + vw + 'x' + vh, compact: true, phone: true, k: k, minFs: 11,
+      W: W, H: H, brand: [m, m, W - 2 * m - 238, brandH], topbtns: [W - m - 232, m - 2, 232, 66], rules3: null,
+      legend: [m, yLeg, W - 2 * m, legendH], board: [Math.round((W - B) / 2), yB, B, B], legendH: legendH,
+      suspects: [m, sTop, W - 2 * m, sH], detail: [m, sTop + sH + 4, W - 2 * m, detH],
+      toolbar: [m, H - m - toolH, W - 2 * m, toolH], result: [m, sTop - 6, W - 2 * m, sAll + 6]
     };
   }
 
@@ -267,8 +305,8 @@
       highlight: [], marks: null, hint: null, orient: orientation()
     };
     const pal = def.palette || {};
-    document.body.style.setProperty('--bg1', pal.bg1 || '#5f9292');
-    document.body.style.setProperty('--bg2', pal.bg2 || '#3b3f86');
+    document.documentElement.style.setProperty('--bg1', pal.bg1 || '#5f9292');
+    document.documentElement.style.setProperty('--bg2', pal.bg2 || '#3b3f86');
     document.title = def.title + ' — Murdoku';
     buildStage();
     startTimer();
@@ -294,16 +332,16 @@
     const L = Object.assign({}, layoutFor(cur.orient));
     // Règles spéciales de l'énigme (parité, comptages…) : bandeau sous les fiches
     const notes = (def.globals || []).filter(function (g) { return g.text; });
-    if (notes.length) {
+    if (notes.length && !L.phone) {
       const sb = L.suspects.slice();
-      const nh = cur.orient === 'portrait' ? 54 : 30 + 30 * notes.length;
+      const nh = L.phone ? 14 + 50 * notes.length : cur.orient === 'portrait' ? 54 : 30 + 30 * notes.length;
       L.suspects = [sb[0], sb[1], sb[2], sb[3] - nh - 8];
       L.notes = [sb[0], sb[1] + sb[3] - nh, sb[2], nh];
       if (L.compact && cur.orient === 'landscape') L.detail = [sb[0], L.suspects[1] + L.suspects[3] - L.detail[3], sb[2], L.detail[3]]; // au-dessus du bandeau de règles
     }
     cur.L = L;
     const pal = def.palette || {};
-    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
+    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (L.phone ? ' phone' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
     // en-tête
     const h1 = L.compact ? (def.title.length > 18 ? 26 : 32) : def.title.length > 22 ? 30 : def.title.length > 15 ? 35 : 42;
     html += '<header class="region brand" style="' + box(L.brand) + ';--h1:' + h1 + 'px">' + logoSvg() +
@@ -344,7 +382,17 @@
     fitStage();
     bindStage();
     B.fitLabels(cur.svg);
-    if (L.compact) fitBrand();
+    if (L.compact && !L.phone) fitBrand();
+    if (L.phone) fitLegendPhone();
+  }
+
+  // Téléphone : la légende s'étend selon le nombre d'objets ; on reconstruit une fois avec la hauteur mesurée
+  function fitLegendPhone() {
+    const lg = cur.stage.querySelector('.legend');
+    lg.style.height = 'auto';
+    const need = Math.ceil(lg.offsetHeight);
+    lg.style.height = cur.L.legend[3] + 'px';
+    if (Math.abs(need - cur.L.legend[3]) > 3 && !cur.legendFixed) { cur.legendH = need; cur.legendFixed = true; buildStage(); }
   }
 
   // En-tête compact : le titre se réduit jusqu'à tenir à côté de la difficulté, sur une seule ligne
@@ -551,7 +599,10 @@
     if (!cur.compact) { det.classList.remove('show'); return; }
     const i = cur.selected;
     if (i < 0) {
-      det.innerHTML = '<span class="txt">Touche un suspect pour lire son indice, puis une case pour le placer.</span>';
+      const gl = (cur.def.globals || []).filter(function (g) { return g.text; });
+      det.innerHTML = cur.L.phone && gl.length
+        ? '<div class="gl">' + gl.map(function (g, j) { return '<div class="note"><span class="num">' + (j + 1) + '</span><span>' + md(g.text) + '</span></div>'; }).join('') + '</div>'
+        : '<span class="txt">Touche un suspect pour lire son indice, puis une case pour le placer.</span>';
     } else {
       const p = cur.P.people[i];
       det.innerHTML = '<span class="who">' + esc(p.name) + '</span><span class="txt">' + md(p.clue || '') + '</span>';
@@ -615,14 +666,12 @@
   function fitStage() {
     if (!cur || !cur.stage) return;
     const L = cur.L || LAYOUT[cur.orient];
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const sc = Math.min(vw / L.W, vh / L.H);
-    cur.stage.style.transform = 'scale(' + sc + ') translate(-50%, -50%)';
-    cur.stage.style.transformOrigin = '0 0';
-    cur.stage.style.left = '50%';
-    cur.stage.style.top = '50%';
-    cur.stage.style.transform = 'translate(-50%, -50%) scale(' + sc + ')';
+    const av = availSize();
+    const sc = Math.min(av.w / L.W, av.h / L.H);
+    cur.stage.style.left = (av.ins.l + av.w / 2) + 'px';
+    cur.stage.style.top = (av.ins.t + av.h / 2) + 'px';
     cur.stage.style.transformOrigin = 'center center';
+    cur.stage.style.transform = 'translate(-50%, -50%) scale(' + sc + ')';
     cur.stage.style.marginLeft = '0';
   }
   let resizeT = null;
