@@ -20,11 +20,18 @@
     const sz = s; // un motif par case
     let inner = '';
     switch (type) {
-      case 'wood':
-        inner = '<rect width="' + sz + '" height="' + sz + '" fill="' + color + '"/>' +
-          [0.25, 0.5, 0.75].map(function (f) { return '<path d="M' + sz * f + ' 0 V' + sz + '" stroke="' + d + '" stroke-width="' + sz * 0.012 + '"/>'; }).join('') +
-          '<path d="M' + sz * 0.12 + ' ' + sz * 0.35 + ' h' + sz * 0.13 + ' M' + sz * 0.62 + ' ' + sz * 0.7 + ' h' + sz * 0.13 + ' M' + sz * 0.37 + ' ' + sz * 0.15 + ' h' + sz * 0.13 + '" stroke="' + d + '" stroke-width="' + sz * 0.01 + '"/>';
+      case 'wood': { // lames verticales alternées, joints décalés, veinage fin
+        const w = sz / 4;
+        inner = '<rect width="' + sz + '" height="' + sz + '" fill="' + color + '"/>';
+        for (let i = 0; i < 4; i++) {
+          if (i % 2) inner += '<rect x="' + i * w + '" width="' + w + '" height="' + sz + '" fill="#000" opacity=".035"/>';
+          const jy = sz * ((0.28 + 0.31 * i) % 1);
+          inner += '<path d="M' + i * w + ' 0 V' + sz + '" stroke="' + d + '" stroke-width="' + sz * 0.014 + '"/>' +
+            '<path d="M' + i * w + ' ' + jy + ' H' + (i + 1) * w + '" stroke="' + d + '" stroke-width="' + sz * 0.012 + '"/>' +
+            '<path d="M' + (i * w + w * 0.35) + ' ' + (jy + sz * 0.1) + ' q' + w * 0.12 + ' ' + sz * 0.18 + ' 0 ' + sz * 0.3 + '" fill="none" stroke="' + d + '" stroke-opacity=".55" stroke-width="' + sz * 0.008 + '"/>';
+        }
         break;
+      }
       case 'checker':
         inner = '<rect width="' + sz + '" height="' + sz + '" fill="' + color + '"/>' +
           '<rect width="' + sz / 2 + '" height="' + sz / 2 + '" fill="' + d + '" opacity=".55"/><rect x="' + sz / 2 + '" y="' + sz / 2 + '" width="' + sz / 2 + '" height="' + sz / 2 + '" fill="' + d + '" opacity=".55"/>';
@@ -59,12 +66,13 @@
             return '<path d="M' + x0 + ' ' + y + ' q' + sz * 0.1 + ' -' + sz * 0.08 + ' ' + sz * 0.2 + ' 0 t' + sz * 0.2 + ' 0 t' + sz * 0.2 + ' 0 t' + sz * 0.2 + ' 0 t' + sz * 0.2 + ' 0" fill="none" stroke="#ffffff" stroke-opacity=".75" stroke-width="' + sz * 0.035 + '" stroke-linecap="round"/>';
           }).join('');
         break;
-      case 'sand':
+      case 'sand': // petites dunes en arcs, grains
         inner = '<rect width="' + sz + '" height="' + sz + '" fill="' + color + '"/>' +
-          [[0.2, 0.3], [0.7, 0.2], [0.45, 0.6], [0.85, 0.75], [0.15, 0.85], [0.6, 0.9], [0.35, 0.12]].map(function (p) {
-            return '<circle cx="' + p[0] * sz + '" cy="' + p[1] * sz + '" r="' + sz * 0.012 + '" fill="' + I.shade(color, -0.25) + '"/>';
-          }).join('') +
-          '<path d="M' + sz * 0.1 + ' ' + sz * 0.5 + ' q' + sz * 0.15 + ' -' + sz * 0.06 + ' ' + sz * 0.3 + ' 0" stroke="' + I.shade(color, -0.12) + '" stroke-width="' + sz * 0.012 + '" fill="none"/>';
+          '<path d="M' + sz * 0.05 + ' ' + sz * 0.38 + ' q' + sz * 0.22 + ' -' + sz * 0.14 + ' ' + sz * 0.45 + ' 0" stroke="' + I.shade(color, -0.14) + '" stroke-width="' + sz * 0.016 + '" fill="none" stroke-linecap="round"/>' +
+          '<path d="M' + sz * 0.45 + ' ' + sz * 0.8 + ' q' + sz * 0.22 + ' -' + sz * 0.14 + ' ' + sz * 0.45 + ' 0" stroke="' + I.shade(color, -0.14) + '" stroke-width="' + sz * 0.016 + '" fill="none" stroke-linecap="round"/>' +
+          [[0.2, 0.2], [0.78, 0.22], [0.6, 0.55], [0.18, 0.72], [0.88, 0.62], [0.4, 0.92]].map(function (p) {
+            return '<circle cx="' + p[0] * sz + '" cy="' + p[1] * sz + '" r="' + sz * 0.012 + '" fill="' + I.shade(color, -0.28) + '"/>';
+          }).join('');
         break;
       case 'stone':
         inner = '<rect width="' + sz + '" height="' + sz + '" fill="' + color + '"/>' +
@@ -98,6 +106,138 @@
     return '<pattern id="' + id + '" patternUnits="userSpaceOnUse" width="' + sz + '" height="' + sz + '">' + inner + '</pattern>';
   }
 
+
+  // ---------- géométrie des surfaces fusionnées (tables, tapis) ----------
+
+  /**
+   * Contours d'un ensemble de cases : liste de boucles de sommets [x, y] en unités de case.
+   * Le parcours laisse l'intérieur à gauche (haut → vers −x, bas → vers +x, gauche → vers +y, droite → vers −y).
+   */
+  function loopsOf(cells) {
+    const set = {};
+    cells.forEach(function (rc) { set[rc[0] + ',' + rc[1]] = true; });
+    const has = function (r, c) { return !!set[r + ',' + c]; };
+    const next = {};
+    const add = function (x0, y0, x1, y1) { (next[x0 + ',' + y0] = next[x0 + ',' + y0] || []).push([x1, y1]); };
+    cells.forEach(function (rc) {
+      const r = rc[0], c = rc[1];
+      if (!has(r - 1, c)) add(c + 1, r, c, r);
+      if (!has(r + 1, c)) add(c, r + 1, c + 1, r + 1);
+      if (!has(r, c - 1)) add(c, r, c, r + 1);
+      if (!has(r, c + 1)) add(c + 1, r + 1, c + 1, r);
+    });
+    const loops = [];
+    Object.keys(next).forEach(function (k) {
+      while (next[k] && next[k].length) {
+        const start = k.split(',').map(Number);
+        let cur = start;
+        const pts = [];
+        let guard = 0;
+        do {
+          pts.push(cur);
+          const list = next[cur[0] + ',' + cur[1]];
+          if (!list || !list.length) break;
+          cur = list.shift();
+        } while ((cur[0] !== start[0] || cur[1] !== start[1]) && guard++ < 500);
+        // fusionne les sommets alignés
+        const out = [];
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[(i + pts.length - 1) % pts.length], b = pts[i], c = pts[(i + 1) % pts.length];
+          if ((b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]) !== 0) out.push(b);
+        }
+        if (out.length >= 3) loops.push(out);
+      }
+    });
+    return loops;
+  }
+
+  /** Rétrécit une boucle : marges par côté {t, r, b, l} en unités de case. */
+  function insetLoop(pts, m) {
+    const n = pts.length;
+    const off = function (a, b) { // décalage vers l'intérieur selon le côté de l'arête
+      const dx = Math.sign(b[0] - a[0]), dy = Math.sign(b[1] - a[1]);
+      if (dx > 0) return { k: m.b, nx: 0, ny: -1 };
+      if (dx < 0) return { k: m.t, nx: 0, ny: 1 };
+      if (dy > 0) return { k: m.l, nx: 1, ny: 0 };
+      return { k: m.r, nx: -1, ny: 0 };
+    };
+    return pts.map(function (p, i) {
+      const e0 = off(pts[(i + n - 1) % n], p), e1 = off(p, pts[(i + 1) % n]);
+      return [p[0] + e0.nx * e0.k + e1.nx * e1.k, p[1] + e0.ny * e0.k + e1.ny * e1.k];
+    });
+  }
+  function ptsPath(pts, s, dy) {
+    return 'M' + pts.map(function (p) { return (p[0] * s).toFixed(1) + ' ' + ((p[1] + (dy || 0)) * s).toFixed(1); }).join('L') + 'Z';
+  }
+
+  /** Table fusionnée : un seul plateau (sans séparation entre les cases), tranche avant, pieds bien visibles. */
+  function tableSurface(piece, s, top) {
+    const loops = loopsOf(piece.cells);
+    const sw = Math.max(3, s * 0.04), th = 0.1, legH = 0.17, lw = 0.075;
+    const m = { t: 0.13, r: 0.12, b: 0.3, l: 0.12 };
+    const edge = I.shade(top, -0.3), legC = I.shade(top, -0.5), hi = I.shade(top, 0.38);
+    let legs = '', slab = '', face = '', light = '', bevel = '';
+    loops.forEach(function (l) {
+      const p = insetLoop(l, m), n = p.length;
+      for (let i = 0; i < n; i++) {
+        const a = p[i], b = p[(i + 1) % n];
+        if (b[0] > a[0] + 1e-6) { // arête du bas : pieds aux deux bouts
+          [a[0] + 0.05, b[0] - 0.05 - lw].forEach(function (x) {
+            legs += '<rect x="' + (x * s).toFixed(1) + '" y="' + ((a[1] + th * 0.4) * s).toFixed(1) + '" width="' + (lw * s).toFixed(1) + '" height="' + ((th * 0.6 + legH) * s).toFixed(1) + '" rx="' + (s * 0.012).toFixed(1) + '" fill="' + legC + '"/>';
+          });
+        } else if (b[0] < a[0] - 1e-6) { // arête du haut : reflet
+          light += '<path d="M' + ((b[0] + 0.05) * s).toFixed(1) + ' ' + ((a[1] + 0.045) * s).toFixed(1) + ' H' + ((a[0] - 0.05) * s).toFixed(1) + '" stroke="' + hi + '" stroke-width="' + (s * 0.02).toFixed(1) + '" stroke-linecap="round" opacity=".8"/>';
+        }
+      }
+      slab += '<path d="' + ptsPath(p, s, th) + '" fill="' + edge + '"/>';
+      face += '<path d="' + ptsPath(p, s, 0) + '" fill="' + top + '"/>';
+      bevel += '<path d="' + ptsPath(insetLoop(p, { t: 0.05, r: 0.05, b: 0.05, l: 0.05 }), s, 0) + '" fill="' + I.shade(top, 0.1) + '" stroke="' + I.shade(top, -0.16) + '" stroke-width="' + (s * 0.012).toFixed(1) + '" stroke-linejoin="round"/>';
+    });
+    const g1 = '<g stroke="' + O + '" stroke-width="' + sw + '" stroke-linejoin="round">';
+    return g1 + legs + slab + face + '</g>' + bevel + light;
+  }
+
+  /** Tapis fusionné : liseré brodé tout autour (fil pointillé, double filet), médaillons, franges sur les petits côtés. */
+  function carpetSurface(piece, s, c) {
+    const loops = loopsOf(piece.cells);
+    const sw = Math.max(2.5, s * 0.035);
+    const m = 0.1, band = 0.13;
+    const bord = I.shade(c, -0.14), dark = I.shade(c, -0.5), thread = I.shade(c, 0.55), field = I.shade(c, 0.04), mid = I.shade(c, -0.3);
+    const uni = function (v) { return { t: v, r: v, b: v, l: v }; };
+    const rs = piece.cells.map(function (x) { return x[0]; }), cs = piece.cells.map(function (x) { return x[1]; });
+    const wide = (Math.max.apply(null, cs) - Math.min.apply(null, cs)) >= (Math.max.apply(null, rs) - Math.min.apply(null, rs));
+    let out = '';
+    loops.forEach(function (l) {
+      const o = insetLoop(l, uni(m)), md = insetLoop(l, uni(m + band * 0.5)), inn = insetLoop(l, uni(m + band));
+      out += '<path d="' + ptsPath(o, s, 0) + '" fill="' + bord + '" stroke="' + dark + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+      out += '<path d="' + ptsPath(inn, s, 0) + '" fill="' + field + '" stroke="' + mid + '" stroke-width="' + (s * 0.014).toFixed(1) + '" stroke-linejoin="round"/>';
+      out += '<path d="' + ptsPath(md, s, 0) + '" fill="none" stroke="' + thread + '" stroke-width="' + (s * 0.02).toFixed(1) + '" stroke-dasharray="' + (s * 0.05).toFixed(1) + ' ' + (s * 0.042).toFixed(1) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+      // franges le long des côtés courts (les petits côtés du rectangle englobant)
+      const n = l.length;
+      for (let i = 0; i < n; i++) {
+        const a = o[i], b = o[(i + 1) % n], a0 = l[i], b0 = l[(i + 1) % n];
+        const vertical = Math.abs(b0[0] - a0[0]) < 1e-6;
+        if (vertical !== wide) continue;
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        const k = Math.max(2, Math.round(len / 0.1));
+        const dx = Math.sign(b[0] - a[0]), dy = Math.sign(b[1] - a[1]);
+        const nx = dy, ny = -dx; // normale gauche = vers l'intérieur
+        let ticks = '';
+        for (let t = 0; t < k; t++) {
+          const f = (t + 0.5) / k, x = a[0] + (b[0] - a[0]) * f, y = a[1] + (b[1] - a[1]) * f;
+          ticks += 'M' + (x * s).toFixed(1) + ' ' + (y * s).toFixed(1) + 'L' + ((x - nx * 0.065) * s).toFixed(1) + ' ' + ((y - ny * 0.065) * s).toFixed(1);
+        }
+        out += '<path d="' + ticks + '" stroke="' + dark + '" stroke-width="' + (s * 0.016).toFixed(1) + '" stroke-linecap="round" fill="none"/>';
+      }
+    });
+    // médaillon en losange au centre de chaque case
+    piece.cells.forEach(function (rc) {
+      const cx = (rc[1] + 0.5) * s, cy = (rc[0] + 0.5) * s, d = s * 0.1;
+      out += '<path d="M' + cx + ' ' + (cy - d) + ' L' + (cx + d) + ' ' + cy + ' L' + cx + ' ' + (cy + d) + ' L' + (cx - d) + ' ' + cy + ' Z" fill="' + I.shade(c, 0.28) + '" stroke="' + mid + '" stroke-width="' + (s * 0.012).toFixed(1) + '" stroke-linejoin="round"/>';
+    });
+    return out;
+  }
+
   /** Surface fusionnée (table, tapis, chemin…) : rectangles par case, contour par double passe. */
   function surface(piece, s, opts) {
     const set = {};
@@ -119,6 +259,8 @@
     }
     const sw = Math.max(3, s * 0.045);
     let out = '';
+    if (piece.type === 'carpet') return carpetSurface(piece, s, piece.v || '#c9a0c0');
+    if (piece.type === 'table') return tableSurface(piece, s, piece.v || (opts.tableColor || '#6e6a86'));
     if (piece.type === 'path') {
       return rectsSvg('url(#pat-path-' + opts.uid + ')');
     }
@@ -481,6 +623,7 @@
 
   root.MurdokuBoard = {
     SIZE: S, PAD: PAD, staticLayer: staticLayer, fitLabels: fitLabels, dynamicLayer: dynamicLayer,
+    surface: surface, loopsOf: loopsOf, insetLoop: insetLoop,
     pawnSvg: pawnSvg, portraitPawn: portraitPawn, pawnColor: pawnColor, esc: esc
   };
 })(typeof window !== 'undefined' ? window : this);
