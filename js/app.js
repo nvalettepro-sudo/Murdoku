@@ -211,6 +211,46 @@
     return window.innerWidth / window.innerHeight < 0.92 ? 'portrait' : 'landscape';
   }
 
+  // Petits écrans en paysage (tablette Android 10", iPad Air/mini…) : la scène fixe 1500×1000 y serait réduite à moins de 85 %.
+  // On construit alors une scène à l'échelle fixe 0,8, aux dimensions de l'écran : plateau plus grand, fiches plus grandes,
+  // sans les trois bulles de règles (elles restent dans « Règles » et dans le Menu).
+  const COMPACT_K = 0.8;
+  function layoutFor(orient) {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    if (orient === 'portrait' && Math.min(vw / 1000, vh / 1420) < 0.85) return layoutPortraitCompact(vw, vh);
+    if (orient !== 'landscape' || Math.min(vw / 1500, vh / 1000) >= 0.85) return Object.assign({ key: orient }, LAYOUT[orient]);
+    const W = Math.round(vw / COMPACT_K), H = Math.round(vh / COMPACT_K);
+    const m = 18, gap = 14, legendH = 66, toolH = 70, brandH = 88;
+    const dense = cur && cur.def && cur.def.people.length > 10; // beaucoup de fiches : plateau un peu plus petit, fiches plus larges
+    const B = Math.min(H - 2 * m - legendH - gap - (dense ? toolH + 10 : 0), Math.round(W * 0.5), dense ? 660 : 9999);
+    const x0 = W - m - B, Lw = x0 - m - 22;
+    // beaucoup de fiches : la barre d'outils passe sous le plateau, ce qui rend toute la hauteur aux fiches
+    const tool = dense ? [x0, m + legendH + gap + B + 10, B, toolH] : [m, H - m - toolH, Lw, toolH];
+    const sTop = m + brandH + 10, sH = (dense ? H - m : H - m - toolH - 10) - sTop;
+    return {
+      key: 'compact:' + vw + 'x' + vh, compact: true, k: COMPACT_K, minFs: dense ? 12.5 : 14,
+      W: W, H: H, brand: [m, m, Lw - 262, brandH], rules3: null, legend: [x0, m, B, legendH],
+      board: [x0, m + legendH + gap, B, B], suspects: [m, sTop, Lw, sH], detail: [m, sTop + sH - 66, Lw, 66],
+      toolbar: tool, result: [m, sTop - 14, Lw, sH + 14], topbtns: [m + Lw - 250, m + 6, 250, 66]
+    };
+  }
+
+  // Même idée en portrait (tablette tenue verticalement) : échelle fixe 0,85, sans les bulles de règles.
+  function layoutPortraitCompact(vw, vh) {
+    const k = 0.85, W = Math.round(vw / k), H = Math.round(vh / k);
+    const m = 16, brandH = 88, legendH = 74, toolH = 70;
+    const y1 = m + brandH + 10 + legendH + 12;
+    const B = Math.max(300, Math.min(W - 2 * m, H - y1 - 12 - 330 - toolH - 3 * m));
+    const sTop = y1 + B + 12, sAll = H - m - toolH - 10 - sTop, sH = sAll - 62 - 6; // le détail d'un suspect s'affiche sous les fiches
+    return {
+      key: 'compactp:' + vw + 'x' + vh, compact: true, k: k, minFs: 13,
+      W: W, H: H, brand: [m, m, W - 2 * m - 262, brandH], topbtns: [W - m - 250, m + 6, 250, 66], rules3: null,
+      legend: [m, m + brandH + 10, W - 2 * m, legendH], board: [Math.round((W - B) / 2), y1, B, B],
+      suspects: [m, sTop, W - 2 * m, sH], detail: [m, sTop + sH + 6, W - 2 * m, 62],
+      toolbar: [m, H - m - toolH, W - 2 * m, toolH], result: [m, sTop - 6, W - 2 * m, sAll + 6]
+    };
+  }
+
   function newState(def) {
     const n = def.people.length;
     return { pos: new Array(n).fill(-1), crosses: {}, notes: {}, time: 0, solved: false };
@@ -251,7 +291,7 @@
 
   function buildStage() {
     const def = cur.def, P = cur.P;
-    const L = Object.assign({}, LAYOUT[cur.orient]);
+    const L = Object.assign({}, layoutFor(cur.orient));
     // Règles spéciales de l'énigme (parité, comptages…) : bandeau sous les fiches
     const notes = (def.globals || []).filter(function (g) { return g.text; });
     if (notes.length) {
@@ -259,16 +299,17 @@
       const nh = cur.orient === 'portrait' ? 54 : 30 + 30 * notes.length;
       L.suspects = [sb[0], sb[1], sb[2], sb[3] - nh - 8];
       L.notes = [sb[0], sb[1] + sb[3] - nh, sb[2], nh];
+      if (L.compact && cur.orient === 'landscape') L.detail = [sb[0], L.suspects[1] + L.suspects[3] - L.detail[3], sb[2], L.detail[3]]; // au-dessus du bandeau de règles
     }
     cur.L = L;
     const pal = def.palette || {};
-    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + '">';
+    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
     // en-tête
-    const h1 = def.title.length > 22 ? 30 : def.title.length > 15 ? 35 : 42;
+    const h1 = L.compact ? (def.title.length > 18 ? 26 : 32) : def.title.length > 22 ? 30 : def.title.length > 15 ? 35 : 42;
     html += '<header class="region brand" style="' + box(L.brand) + ';--h1:' + h1 + 'px">' + logoSvg() +
       '<h1>' + esc(def.title) + '</h1><div class="diff">difficulté : ' + esc(def.difficulty) + '</div></header>';
     // bulles de règles
-    html += '<section class="region rules3" style="' + box(L.rules3) + '">' + rulesBubbles(def) + '</section>';
+    if (L.rules3) html += '<section class="region rules3" style="' + box(L.rules3) + '">' + rulesBubbles(def) + '</section>';
     // légende
     html += '<section class="region legend" style="' + box(L.legend) + '">' + legendHtml(P) + '</section>';
     // plateau
@@ -303,6 +344,16 @@
     fitStage();
     bindStage();
     B.fitLabels(cur.svg);
+    if (L.compact) fitBrand();
+  }
+
+  // En-tête compact : le titre se réduit jusqu'à tenir à côté de la difficulté, sur une seule ligne
+  function fitBrand() {
+    const br = cur.stage.querySelector('.brand'), h1 = br.querySelector('h1'), diff = br.querySelector('.diff');
+    if (!h1 || !diff) return;
+    const avail = br.clientWidth - diff.offsetWidth - 20;
+    let fs = parseFloat(getComputedStyle(h1).fontSize), guard = 0;
+    while (h1.scrollWidth > avail && fs > 15 && guard++ < 30) { fs -= 1; h1.style.fontSize = fs + 'px'; }
   }
 
   function toolBtn(id, label, icon) {
@@ -419,7 +470,7 @@
   // Trois modes : verticale (polaroïd + bulle dessous), horizontale (bulle à droite), compacte (portrait seul).
   function layoutCards() {
     const box2 = cur.stage.querySelector('.suspects');
-    const L = cur.L || LAYOUT[cur.orient];
+    const L = cur.L;
     const n = cur.P.people.length;
     const W = L.suspects[2], H = L.suspects[3];
     const cap = 21;
@@ -441,7 +492,7 @@
       }
       return best;
     }
-    const minFs = cur.orient === 'portrait' ? 13.5 : 12.5;
+    const minFs = L.minFs || (cur.orient === 'portrait' ? 13.5 : 12.5);
     let best = measure('vert');
     if (best.fs < 15) {
       const hz = measure('horiz');
@@ -574,7 +625,7 @@
     resizeT = setTimeout(function () {
       if (!cur) return;
       const o = orientation();
-      if (o !== cur.orient) { cur.orient = o; buildStage(); } else fitStage();
+      if (o !== cur.orient || layoutFor(o).key !== cur.L.key) { cur.orient = o; buildStage(); } else fitStage();
     }, 80);
   });
 
@@ -1033,7 +1084,7 @@
     const box2 = function (cls, label, q, v2) {
       return '<div class="who ' + cls + '"><span class="lab">' + label + '</span><div class="portrait">' + A.avatar(q.look, v2 ? { victim: true } : {}) + '</div><div class="nm">' + esc(q.name) + '</div></div>';
     };
-    const el = h('<section class="region winpanel" style="' + box(LAYOUT[cur.orient].result) + '">' +
+    const el = h('<section class="region winpanel" style="' + box(cur.L.result) + '">' +
       '<h2>Le meurtrier est démasqué !</h2>' +
       '<div class="body"><div class="duo">' + box2('killer', 'Le meurtrier', kill, false) + box2('victim', 'La victime', vic, true) + '</div>' +
       '<div class="txt">' + because + '<p class="time">Résolu en <b>' + fmtTime(cur.st.time) + '</b></p></div></div>' +

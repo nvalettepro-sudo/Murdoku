@@ -72,6 +72,7 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 .stage-wrap { position: fixed; inset: 0; overflow: hidden; display: grid; place-items: center; }
 .stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; }
 .stage.landscape { width: 1500px; height: 1000px; }
+.stage.landscape.compact-l { width: auto; height: auto; }
 .stage.portrait { width: 1000px; height: 1420px; }
 
 .stage .region { position: absolute; }
@@ -291,3 +292,11 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 .stage.portrait .winpanel p.why2 { display: none; }
 .stage.portrait .winpanel p.time { font-size: 14px; }
 .stage.portrait .winpanel .actions { margin-top: 0; }
+
+/* Mise en page compacte (petits écrans en paysage) : logo, puis titre et difficulté sur une ligne */
+.stage.compact-l .brand { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; align-content: center; column-gap: 16px; row-gap: 2px; }
+.stage.compact-l .brand .logo { grid-column: 1 / span 2; font-size: 44px; line-height: 1; }
+.stage.compact-l .brand h1 { margin: 0; white-space: nowrap; align-self: end; }
+.stage.compact-l .brand .diff { margin: 0; font-size: 19px; white-space: nowrap; align-self: end; padding-bottom: 2px; }
+.stage.compact-l .legend .lg h4 { font-size: 14px; }
+.stage.compact-l .toolbar .timer { font-size: 20px; padding: 5px 12px; min-width: 84px; }

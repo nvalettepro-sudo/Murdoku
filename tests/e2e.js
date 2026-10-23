@@ -94,6 +94,8 @@ async function play(browser, ctxOpts, id, label) {
   const browser = await chromium.launch(process.env.E2E_CHANNEL ? { channel: process.env.E2E_CHANNEL } : {});
   const ipad = { viewport: { width: 1180, height: 820 }, hasTouch: false, deviceScaleFactor: 1 };
   const ipadPortrait = { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1 };
+  const tabLand = { viewport: { width: 1280, height: 690 }, deviceScaleFactor: 1 }; // Galaxy Tab S10 Lite, Chrome (≈ 2112×1320 px, échelle 1,65)
+  const tabPort = { viewport: { width: 800, height: 1100 }, deviceScaleFactor: 1 };
   const pc = { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 };
   const ids = (process.env.IDS || 'netflix-and-kill,car-repair,courtroom,golf-course,zoo').split(',');
   let ok = true;
@@ -101,6 +103,9 @@ async function play(browser, ctxOpts, id, label) {
     ok = (await play(browser, ipad, id, 'ipad-paysage')) && ok;
   }
   ok = (await play(browser, ipadPortrait, 'holiday-shopping', 'ipad-portrait')) && ok;
+  ok = (await play(browser, tabLand, 'art-school', 'tab-paysage')) && ok;
+  ok = (await play(browser, tabLand, 'zoo', 'tab-paysage')) && ok;
+  ok = (await play(browser, tabPort, 'courtroom', 'tab-portrait')) && ok;
   ok = (await play(browser, pc, 'mystery-islands', 'pc')) && ok;
   await browser.close();
   process.exit(ok ? 0 : 1);
