@@ -221,6 +221,9 @@
   }
   function availSize() {
     const i = safeInsets();
+    // Application installée (iOS 26) : le système floute les bords haut et bas ; on garde le contenu à distance
+    const standalone = (window.navigator && window.navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (standalone && !/[?&]safe=/.test(location.search)) { if (i.t > 0) i.t += 14; if (i.b > 0) i.b += 6; }
     const vh = window.visualViewport ? Math.min(window.innerHeight, window.visualViewport.height) : window.innerHeight;
     return { w: window.innerWidth - i.l - i.r, h: vh - i.t - i.b, ins: i };
   }
