@@ -116,7 +116,9 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 
 /* Légende des objets */
 .legend { display: flex; gap: 14px; align-items: stretch; }
-.legend .lg { border-radius: 34px; padding: 6px 16px 6px; display: flex; flex-direction: column; align-items: center; }
+.legend .lg { border-radius: 34px; padding: 6px 16px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; }
+.legend .lgi { display: flex; flex-direction: column; align-items: center; flex: none; max-width: 100%; }
+.legend .lg h4, .legend .it { white-space: nowrap; }
 .legend .lg.ok { background: var(--legend-ok); }
 .legend .lg.no { background: var(--legend-no); flex: 1; }
 .legend .lg h4 { margin: 0 0 2px; font-family: var(--font); font-weight: 600; font-size: 15px; }
@@ -315,15 +317,16 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 /* Téléphone (portrait) */
 .stage.phone .legend { flex-direction: column; gap: 6px; }
 .stage.phone .legend .lg { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; flex: none; width: 100%; border-radius: 26px; padding: 4px 14px; }
+.stage.phone .legend .lgi { flex-direction: row; gap: 10px; width: 100%; align-items: center; justify-content: flex-start; white-space: normal; }
 .stage.phone .legend .lg h4 { margin: 0; font-size: 13px; line-height: 1.1; flex: none; width: 92px; text-align: left; }
 .stage.phone .legend .items { flex-wrap: wrap; justify-content: flex-start; gap: 4px 8px; }
-.stage.phone .legend .it { font-size: 10.5px; }
+.stage.phone .legend .it { font-size: 12px; }
 .stage.phone .legend .it svg { width: 30px; height: 30px; }
 .stage.phone .legend .it svg.long { width: 46px; }
-.stage.phone .brand { display: block; }
-.stage.phone .brand .logo { display: none; }
-.stage.phone .brand h1 { margin: 0; font-size: 26px; line-height: 1.1; white-space: nowrap; }
-.stage.phone .brand .diff { margin: 2px 0 0; font-size: 17px; }
+.stage.phone .brand, .stage.slim .brand { display: block; }
+.stage.phone .brand .logo, .stage.slim .brand .logo { display: none; }
+.stage.phone .brand h1, .stage.slim .brand h1 { margin: 0; font-size: 26px; line-height: 1.1; white-space: nowrap; }
+.stage.phone .brand .diff, .stage.slim .brand .diff { margin: 2px 0 0; font-size: 17px; }
 .stage.phone .topbtns { gap: 6px; }
 .stage.phone .topbtns .tool { height: 60px; min-width: 70px; }
 .stage.phone .toolbar { gap: 5px; }

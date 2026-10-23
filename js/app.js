@@ -240,9 +240,15 @@
     const av = availSize(), vw = av.w, vh = av.h;
     if (orient === 'portrait' && vw < 600) return layoutPhone(vw, vh);
     if (orient === 'portrait' && Math.min(vw / 1000, vh / 1420) < 0.85) return layoutPortraitCompact(vw, vh);
-    if (orient !== 'landscape' || Math.min(vw / 1500, vh / 1000) >= 0.85) return Object.assign({ key: orient }, LAYOUT[orient]);
+    if (orient !== 'landscape' || Math.min(vw / 1500, vh / 1000) >= 0.85) {
+      const std = Object.assign({ key: orient }, LAYOUT[orient]);
+      if (orient === 'landscape' && legendExtra()) { // 16 px de plus pour la légende, pris sur le plateau
+        std.legend = [850, 194, 626, 98]; std.board = [858, 302, 610, 610]; std.key += ':lg';
+      }
+      return std;
+    }
     const W = Math.round(vw / COMPACT_K), H = Math.round(vh / COMPACT_K);
-    const m = 18, gap = 14, legendH = 66, toolH = 70, brandH = 88;
+    const m = 18, gap = 14, legendH = 76 + 24 * legendExtra(), toolH = 70, brandH = 88;
     const dense = cur && cur.def && cur.def.people.length > 10; // beaucoup de fiches : plateau un peu plus petit, fiches plus larges
     const B = Math.min(H - 2 * m - legendH - gap - (dense ? toolH + 10 : 0), Math.round(W * 0.5), dense ? 660 : 9999);
     const x0 = W - m - B, Lw = x0 - m - 22;
@@ -346,7 +352,7 @@
     }
     cur.L = L;
     const pal = def.palette || {};
-    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (L.phone ? ' phone' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
+    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (L.phone ? ' phone' : '') + (L.compact && !L.phone && L.brand[2] < 440 ? ' slim' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
     // en-tête
     const h1 = L.compact ? (def.title.length > 18 ? 26 : 32) : def.title.length > 22 ? 30 : def.title.length > 15 ? 35 : 42;
     html += '<header class="region brand" style="' + box(L.brand) + ';--h1:' + h1 + 'px">' + logoSvg() +
@@ -389,6 +395,7 @@
     B.fitLabels(cur.svg);
     if (L.compact && !L.phone) fitBrand();
     if (L.phone) fitLegendPhone();
+    fitLegend(cur.stage);
   }
 
   // Téléphone : la légende s'étend selon le nombre d'objets ; on reconstruit une fois avec la hauteur mesurée
@@ -400,11 +407,26 @@
     if (Math.abs(need - cur.L.legend[3]) > 3 && !cur.legendFixed) { cur.legendH = need; cur.legendFixed = true; buildStage(); }
   }
 
+  // Légende : le contenu de chaque bulle est réduit, si besoin, pour tenir dans la bulle (jamais de texte qui dépasse)
+  function fitLegend(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('.legend .lg'), function (lg) {
+      const inner = lg.querySelector('.lgi');
+      if (!inner) return;
+      inner.style.transform = '';
+      const cs = getComputedStyle(lg);
+      const availH = lg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      const availW = lg.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const sc = Math.min(1, availH / inner.offsetHeight, availW / inner.scrollWidth);
+      if (sc < 0.999) { inner.style.transform = 'scale(' + sc.toFixed(3) + ')'; inner.style.transformOrigin = 'center center'; }
+    });
+  }
+
   // En-tête compact : le titre se réduit jusqu'à tenir à côté de la difficulté, sur une seule ligne
   function fitBrand() {
     const br = cur.stage.querySelector('.brand'), h1 = br.querySelector('h1'), diff = br.querySelector('.diff');
     if (!h1 || !diff) return;
-    const avail = br.clientWidth - diff.offsetWidth - 20;
+    const slim = cur.stage.classList.contains('slim');
+    const avail = slim ? br.clientWidth : br.clientWidth - diff.offsetWidth - 20;
     let fs = parseFloat(getComputedStyle(h1).fontSize), guard = 0;
     while (h1.scrollWidth > avail && fs > 15 && guard++ < 30) { fs -= 1; h1.style.fontSize = fs + 'px'; }
   }
@@ -462,9 +484,9 @@
     return g + '</svg>';
   }
 
-  function legendHtml(P) {
-    const def = P.def;
-    const occ = new Set(def.occupiable || []);
+  // Objets distincts de la légende : ceux où l'on peut se tenir, et les autres
+  function legendLists(P) {
+    const occ = new Set(P.def.occupiable || []);
     const seenOk = {}, seenNo = {};
     const ok = [], no = [];
     P.pieces.forEach(function (p) {
@@ -474,6 +496,18 @@
       if (isOk) { if (seenOk[key]) return; seenOk[key] = 1; ok.push(p); }
       else { if (seenNo[key]) return; seenNo[key] = 1; no.push(p); }
     });
+    return { ok: ok, no: no };
+  }
+  // Légende chargée (plus de 9 objets, ex. le zoo) : on lui donne plus de hauteur dans les mises en page paysage
+  function legendExtra() {
+    if (!cur || !cur.P) return 0;
+    const l = legendLists(cur.P);
+    return l.ok.length + l.no.length > 9 ? 1 : 0;
+  }
+
+  function legendHtml(P) {
+    const def = P.def;
+    const lists = legendLists(P), ok = lists.ok, no = lists.no;
     function item(p) {
       const name = I.NAMES[p.type] || p.type;
       let svg;
@@ -500,8 +534,8 @@
     let html = '';
     const dense = ok.length + no.length > 9 ? ' dense' : '';
     if (dense) html += '<span hidden class="dense-flag"></span>';
-    if (ok.length) html += '<div class="lg ok' + dense + '"><h4>Peut être occupé</h4><div class="items">' + ok.map(item).join('') + '</div></div>';
-    if (no.length) html += '<div class="lg no' + dense + '"><h4>Ne peut pas être occupé</h4><div class="items">' + no.map(item).join('') + '</div></div>';
+    if (ok.length) html += '<div class="lg ok' + dense + '"><div class="lgi"><h4>Peut être occupé</h4><div class="items">' + ok.map(item).join('') + '</div></div></div>';
+    if (no.length) html += '<div class="lg no' + dense + '"><div class="lgi"><h4>Ne peut pas être occupé</h4><div class="items">' + no.map(item).join('') + '</div></div></div>';
     return html;
   }
 
@@ -589,7 +623,7 @@
   // On refait donc toute la mise en page des fiches, des prénoms, des étiquettes et de l'en-tête.
   function refitAll() {
     if (cur && cur.stage) {
-      layoutCards(); B.fitLabels(cur.svg);
+      layoutCards(); B.fitLabels(cur.svg); fitLegend(cur.stage);
       if (cur.L.compact) { const h1 = cur.stage.querySelector('.brand h1'); if (h1) h1.style.fontSize = ''; fitBrand(); }
       if (cur.compact) renderDetail();
     } else B.fitLabels(app);

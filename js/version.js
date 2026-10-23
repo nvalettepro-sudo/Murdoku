@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.14',
+    VERSION: '1.15',
     DATE: '2026-10-23',
     HISTORY: [
+      { v: '1.15', d: '2026-10-23', t: 'Partie haute : les libellés de la légende ne sortent plus de leur bulle, légende plus haute quand elle compte beaucoup d’objets (zoo), en-tête allégé sur les petites largeurs. Un test automatique contrôle désormais toutes les énigmes sur 6 tailles d’écran.' },
       { v: '1.14', d: '2026-10-23', t: 'Police Montserrat hébergée avec le jeu : plus de textes très fins sur Chrome iOS, chargement plus rapide, polices disponibles hors ligne.' },
       { v: '1.13', d: '2026-10-23', t: 'iPhone : fond plein sur toute la hauteur (plus de bande blanche), titre net (ombre retirée), barre d’état teintée aux couleurs de l’énigme, marges de sécurité en haut et en bas pour l’application installée (iOS 26).' },
       { v: '1.12', d: '2026-10-23', t: 'iPhone : mise en page dédiée en portrait (légende sur deux lignes, plateau pleine largeur, règles spéciales dans la boîte d’information), zones sûres (encoche, barre du bas) respectées, fond sans bande blanche.' },
