@@ -32,7 +32,7 @@
     D: { name: 'Île du désert', floor: 'sand', color: '#f3e2b3', label: [0, 11] },
     T: { name: 'Île de la ville', floor: 'grass', color: '#b9eda0', label: [13, 7] },
     L: { name: 'Île solitaire', floor: 'grass', color: '#a6e3c6', label: [15, 3] },
-    E: { name: 'Île déserte', floor: 'stone', color: '#a8b3b8', label: [14, 12] }
+    E: { name: 'Île vide', floor: 'stone', color: '#a8b3b8', label: [14, 12] }
   },
   objects: [
     { t: 'sand', at: '0,8 0,9 0,10 0,12 0,13 0,14 0,15 1,9 1,11 1,14 2,11 2,13 3,10 3,11 3,12 3,13 3,14 4,12 4,14 5,11 5,13 6,13' },
@@ -52,7 +52,7 @@
     { text: 'Chaque île avait un nombre d’occupants **différent** des autres (0 est possible).', rule: "distinctCounts(['F', 'D', 'T', 'L', 'E'])" }
   ],
   people: [
-    { id: 'A', name: 'Ayla', gender: 'f', clue: "Elle était sur l'**Île déserte** ou l'**Île du désert**. Il y avait un **requin** quelque part sur sa **rangée**.", rule: "inArea('E', 'D') && rowHas('shark')",
+    { id: 'A', name: 'Ayla', gender: 'f', clue: "Elle était sur l'**Île vide** ou l'**Île du désert**. Il y avait un **requin** quelque part sur sa **rangée**.", rule: "inArea('E', 'D') && rowHas('shark')",
       look: { skin: '#e8b48a', hair: 'bob', hairColor: '#9a6a3a', bg: '#d8c890', shirt: '#4a5a8a' } },
     { id: 'B', name: 'Bastian', gender: 'm', clue: "Il était le **seul homme** de l'**Île du désert**, à côté d'**exactement deux cactus**.", rule: "inArea('D') && none(q => q.man && q.area === 'D') && besideCount('cactus') === 2",
       look: { skin: '#5a3a28', hair: 'buzz', hairColor: '#1d1a1a', beard: 'full', beardColor: '#1d1a1a', glasses: 'sun', bg: '#5aa0e0', shirt: '#9ad8a0' } },
