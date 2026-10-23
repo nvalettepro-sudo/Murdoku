@@ -68,6 +68,7 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 4px s
 .home-foot a { color: #fff; }
 
 /* ---------- Planche de jeu ---------- */
+html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .stage-wrap { position: fixed; inset: 0; overflow: hidden; display: grid; place-items: center; }
 .stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; }
 .stage.landscape { width: 1500px; height: 1000px; }

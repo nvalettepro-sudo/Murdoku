@@ -20,6 +20,15 @@
   }
   function save(k, v) { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) { /* ignoré */ } }
 
+  // iPad : un double appui rapide zoome la page ; on l'empêche (les gestes du jeu n'utilisent que des appuis simples).
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function (e) {
+    const now = Date.now();
+    if (now - lastTouchEnd < 350 && e.cancelable && !(e.target.closest && e.target.closest('input, textarea'))) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
   const settings = Object.assign({ autoCross: true, autoCheck: false, timer: true, showHint: false, showCheck: false }, load('settings', {}));
   delete settings.shade; // ancien réglage (grisé), remplacé par les croix automatiques
 
@@ -155,7 +164,7 @@
     const items = [
       ['1', 'Lis les indices et place les suspects',
         'Chaque suspect se trouve dans une case libre, selon son indice (pièce, objet, voisin).',
-        'Touche un suspect, puis sa case. Touche son pion pour le retirer.'],
+        'Touche un suspect, puis sa case. Un appui sur son pion le retire.'],
       ['2', 'Une personne par rangée et par colonne',
         'Dès qu’un suspect est placé, plus personne d’autre sur sa rangée ni sur sa colonne.',
         'Touche une case vide pour une croix, ou glisse pour en tracer plusieurs. Des croix claires se posent aussi toutes seules.'],
@@ -673,7 +682,7 @@
     const occ = st.pos.indexOf(k);
     if (cur.tool === 'draft') {
       if (cur.selected < 0) {
-        if (occ >= 0) { selectPerson(occ); return; }
+        if (occ >= 0) { pushHistory(); st.pos[occ] = -1; changed(); return; }
         toast('Brouillon : choisis un suspect, puis touche toutes les cases possibles.');
         return;
       }
@@ -688,7 +697,7 @@
       placeAt(cur.selected, k);
       return;
     }
-    if (occ >= 0) { selectPerson(occ); return; }
+    if (occ >= 0) { pushHistory(); st.pos[occ] = -1; changed(); return; }
     pushHistory();
     setCross(k, !st.crosses[k]);
     changed();
@@ -1077,7 +1086,7 @@
       'Chaque suspect donne un <b>indice</b>. Ton but : retrouver la <b>case exacte</b> de chaque personne, victime comprise, puis démasquer le meurtrier.</p>' +
       pair('1. Placer les suspects',
         'Chaque personne occupe une case. <b>Une seule personne par rangée et par colonne.</b>',
-        'Touche la fiche d’un suspect, puis la case voulue : son pion apparaît avec son visage et son initiale. Touche le pion pour le sélectionner, puis encore pour le retirer. Si la rangée ou la colonne est déjà prise, un message te le dit.') +
+        'Touche la fiche d’un suspect, puis la case voulue : son pion apparaît avec son visage et son initiale. Un seul appui sur le pion le retire. Si la rangée ou la colonne est déjà prise, un message te le dit.') +
       pair('2. Éliminer des cases',
         'Dès qu’un suspect est placé, sa rangée et sa colonne sont interdites à tous les autres.',
         'Des <b>croix claires</b> se posent toutes seules (réglable dans Options). Pose les tiennes, en foncé : touche une case vide, ou fais un appui long ou un clic droit. Pour en tracer plusieurs, <b>glisse le doigt</b> sur les cases vides. Touche une croix pour l’enlever.') +
