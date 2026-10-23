@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.9',
+    VERSION: '1.10',
     DATE: '2026-10-23',
     HISTORY: [
+      { v: '1.10', d: '2026-10-23', t: 'Tests : les parcours de jeu complets (iPad paysage et portrait, PC) tournent désormais automatiquement sur GitHub. Aucun changement du jeu.' },
       { v: '1.9', d: '2026-10-23', t: 'Publication : les liens d’aperçu des PR sont listés dans le résumé du job (onglet Actions). Aucun changement du jeu.' },
       { v: '1.8', d: '2026-10-23', t: 'Un seul appui sur un pion le retire. Le double appui qui zoomait la page sur iPad est bloqué.' },
       { v: '1.7', d: '2026-10-22', t: 'Indices reformulés sans ambiguïté : « seul » précise « dans sa zone », « au nord » précise « sur une rangée plus haute » ou « juste au-dessus », etc.' },

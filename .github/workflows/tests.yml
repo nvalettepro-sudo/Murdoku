@@ -16,3 +16,23 @@ jobs:
         run: for f in js/*.js puzzles/*.js tests/*.js sw.js; do node --check "$f"; done
       - name: Unicité des solutions (grilles jusqu'à 12×12) et validité des grilles expert
         run: node tests/solve-all.js --quick && node tests/check-version.js
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Installer Playwright et Chromium
+        run: |
+          mkdir -p "$RUNNER_TEMP/pw" && cd "$RUNNER_TEMP/pw"
+          npm init -y >/dev/null && npm install playwright@1.56.1
+          npx playwright install --with-deps chromium
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+      - name: Parcours complets iPad (paysage, portrait) et PC
+        run: |
+          python3 -m http.server 8765 >/dev/null 2>&1 &
+          sleep 2
+          node tests/e2e.js http://localhost:8765/
