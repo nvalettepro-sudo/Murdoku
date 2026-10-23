@@ -48,15 +48,14 @@ jobs:
           rm -rf _site/tests _site/.github
           gh pr list -R "$GITHUB_REPOSITORY" --state open --json number,isCrossRepository \
             --jq '.[] | select(.isCrossRepository == false) | .number' > prs.txt
-          : > previews.txt
           while read -r n; do
             [ -z "$n" ] && continue
             git fetch -q origin "refs/pull/$n/head:pr-$n"
             mkdir -p "_site/preview/pr-$n"
             git archive "pr-$n" | tar -x -C "_site/preview/pr-$n"
             rm -rf "_site/preview/pr-$n/tests" "_site/preview/pr-$n/.github"
-            echo "$n" >> previews.txt
             echo "Aperçu de la PR #$n assemblé"
+            echo "- PR #$n : https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/preview/pr-$n/" >> "$GITHUB_STEP_SUMMARY"
           done < prs.txt
           touch _site/.nojekyll
 
