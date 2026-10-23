@@ -36,4 +36,5 @@ jobs:
         run: |
           python3 -m http.server 8765 >/dev/null 2>&1 &
           sleep 2
+          node tests/check-top.js http://localhost:8765/
           node tests/e2e.js http://localhost:8765/
