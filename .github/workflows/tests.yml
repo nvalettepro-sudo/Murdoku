@@ -25,13 +25,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Installer Playwright et Chromium
+      - name: Installer Playwright (le Chrome du runner est utilisé, aucun téléchargement de navigateur)
         run: |
           mkdir -p "$RUNNER_TEMP/pw" && cd "$RUNNER_TEMP/pw"
-          npm init -y >/dev/null && npm install playwright@1.56.1
-          npx playwright install --with-deps chromium
+          npm init -y >/dev/null && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install playwright@1.56.1
           echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
       - name: Parcours complets iPad (paysage, portrait) et PC
+        env:
+          E2E_CHANNEL: chrome
         run: |
           python3 -m http.server 8765 >/dev/null 2>&1 &
           sleep 2
