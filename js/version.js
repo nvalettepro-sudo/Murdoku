@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.18',
+    VERSION: '1.19',
     DATE: '2026-10-23',
     HISTORY: [
+      { v: '1.19', d: '2026-10-23', t: 'Graphismes plus détaillés : tapis brodés, tables en une seule dalle avec pieds visibles, vraie caisse en bois, plante dans son pot, animaux, voiture, lit, arbres, etc. « Caisse » enregistreuse renommée « Tiroir-caisse ».' },
       { v: '1.18', d: '2026-10-23', t: 'Contrôle des 100 indices contre les feuilles d’origine : Everly (École d’art) reformulée sans ambiguïté ; « Île déserte » renommée « Île vide » (Mystery Islands) pour ne plus la confondre avec « Île du désert ». Tableau de vérification dans docs/.' },
       { v: '1.17', d: '2026-10-23', t: 'Tablette en portrait : plateau agrandi au maximum (presque toute la largeur), portraits des suspects réduits en dessous (une seule rangée jusqu’à 9 suspects).' },
       { v: '1.16', d: '2026-10-23', t: 'iPhone : le titre de la légende ne chevauche plus les icônes (retour à la ligne rétabli). Le test automatique contrôle ce chevauchement.' },
