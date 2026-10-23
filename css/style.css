@@ -318,7 +318,7 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 .stage.phone .legend { flex-direction: column; gap: 6px; }
 .stage.phone .legend .lg { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; flex: none; width: 100%; border-radius: 26px; padding: 4px 14px; }
 .stage.phone .legend .lgi { flex-direction: row; gap: 10px; width: 100%; align-items: center; justify-content: flex-start; white-space: normal; }
-.stage.phone .legend .lg h4 { margin: 0; font-size: 13px; line-height: 1.1; flex: none; width: 92px; text-align: left; }
+.stage.phone .legend .lg h4 { white-space: normal; margin: 0; font-size: 13px; line-height: 1.1; flex: none; width: 92px; text-align: left; }
 .stage.phone .legend .items { flex-wrap: wrap; justify-content: flex-start; gap: 4px 8px; }
 .stage.phone .legend .it { font-size: 12px; }
 .stage.phone .legend .it svg { width: 30px; height: 30px; }

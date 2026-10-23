@@ -29,6 +29,14 @@ function inspect() {
     const R = e.closest('.lg').getBoundingClientRect(), q = e.getBoundingClientRect();
     if (q.bottom > R.bottom + 1 || q.top < R.top - 1 || q.right > R.right + 1 || q.left < R.left - 1) out.push('légende : un objet sort de sa bulle');
   });
+  // le titre d'une bulle de légende ne doit pas chevaucher ses icônes
+  document.querySelectorAll('.legend .lg').forEach(e => {
+    const h = e.querySelector('h4'), it = e.querySelector('.items');
+    if (!h || !it) return;
+    const rg = document.createRange(); rg.selectNodeContents(h);
+    const a = rg.getBoundingClientRect(), b = it.getBoundingClientRect();
+    if (a.left < b.right - 2 && b.left < a.right - 2 && a.top < b.bottom - 2 && b.top < a.bottom - 2) out.push('légende : le titre chevauche les icônes');
+  });
   document.querySelectorAll('.bubble').forEach(e => textOut(e, 'bulle de règle', '.num'));
   const br = document.querySelector('.brand');
   if (br) textOut(br, 'en-tête', '.logo');
