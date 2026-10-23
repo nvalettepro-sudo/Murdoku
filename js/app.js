@@ -221,7 +221,11 @@
   }
   function availSize() {
     const i = safeInsets();
-    return { w: window.innerWidth - i.l - i.r, h: window.innerHeight - i.t - i.b, ins: i };
+    // Application installée (iOS 26) : le système floute les bords haut et bas ; on garde le contenu à distance
+    const standalone = (window.navigator && window.navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    if (standalone && !/[?&]safe=/.test(location.search)) { if (i.t > 0) i.t += 14; if (i.b > 0) i.b += 6; }
+    const vh = window.visualViewport ? Math.min(window.innerHeight, window.visualViewport.height) : window.innerHeight;
+    return { w: window.innerWidth - i.l - i.r, h: vh - i.t - i.b, ins: i };
   }
 
   function orientation() {
@@ -307,6 +311,7 @@
     const pal = def.palette || {};
     document.documentElement.style.setProperty('--bg1', pal.bg1 || '#5f9292');
     document.documentElement.style.setProperty('--bg2', pal.bg2 || '#3b3f86');
+    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = pal.bg1 || '#5f9292'; // teinte de la barre d'état
     document.title = def.title + ' — Murdoku';
     buildStage();
     startTimer();

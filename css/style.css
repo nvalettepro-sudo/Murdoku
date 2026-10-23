@@ -22,12 +22,13 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
-html { background: linear-gradient(115deg, var(--bg1, #5f9292), var(--bg2, #3b3f86)) fixed; }
+/* Fond posé sur <html> avec une couleur pleine : rien de blanc sous la barre du bas ni derrière l'encoche */
+html { min-height: 100vh; min-height: 100lvh; background-color: var(--bg2, #3b3f86); background-image: linear-gradient(115deg, var(--bg1, #5f9292), var(--bg2, #3b3f86)); background-repeat: no-repeat; background-size: 100% 100%; }
 body {
   font-family: var(--font);
   color: var(--ink);
-  background: linear-gradient(115deg, var(--bg1), var(--bg2));
-  background-attachment: fixed;
+  background: transparent;
+  min-height: 100vh; min-height: 100lvh;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
@@ -326,3 +327,6 @@ html, body, button, a, .stage { touch-action: manipulation; -webkit-tap-highligh
 .stage.phone .detail { font-size: 17px; padding: 6px 14px; border-radius: 22px; }
 .stage.phone .detail .who { font-size: 19px; }
 .stage.phone .winpanel { overflow-y: auto; }
+
+/* Réduite à 75 %, l'ombre du titre donne un effet de flou : on la retire sur les petits écrans */
+.stage.compact-l .brand h1 { text-shadow: none; }
