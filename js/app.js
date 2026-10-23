@@ -221,7 +221,8 @@
   }
   function availSize() {
     const i = safeInsets();
-    return { w: window.innerWidth - i.l - i.r, h: window.innerHeight - i.t - i.b, ins: i };
+    const vh = window.visualViewport ? Math.min(window.innerHeight, window.visualViewport.height) : window.innerHeight;
+    return { w: window.innerWidth - i.l - i.r, h: vh - i.t - i.b, ins: i };
   }
 
   function orientation() {
@@ -307,6 +308,7 @@
     const pal = def.palette || {};
     document.documentElement.style.setProperty('--bg1', pal.bg1 || '#5f9292');
     document.documentElement.style.setProperty('--bg2', pal.bg2 || '#3b3f86');
+    const tc = document.querySelector('meta[name=theme-color]'); if (tc) tc.content = pal.bg1 || '#5f9292'; // teinte de la barre d'état
     document.title = def.title + ' — Murdoku';
     buildStage();
     startTimer();
