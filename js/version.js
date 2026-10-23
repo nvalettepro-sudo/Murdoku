@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.7',
-    DATE: '2026-10-22',
+    VERSION: '1.8',
+    DATE: '2026-10-23',
     HISTORY: [
+      { v: '1.8', d: '2026-10-23', t: 'Un seul appui sur un pion le retire. Le double appui qui zoomait la page sur iPad est bloqué.' },
       { v: '1.7', d: '2026-10-22', t: 'Indices reformulés sans ambiguïté : « seul » précise « dans sa zone », « au nord » précise « sur une rangée plus haute » ou « juste au-dessus », etc.' },
       { v: '1.6', d: '2026-10-22', t: 'Bandeau « Le meurtrier est… » supprimé. Résumé de fin à gauche, au-dessus des suspects : portraits du meurtrier et de la victime, avec l’explication. La grille reste visible.' },
       { v: '1.5', d: '2026-10-22', t: 'Menu : Quick guide en 3 points qui résume les règles du jeu et la manière de jouer dans cette version.' },

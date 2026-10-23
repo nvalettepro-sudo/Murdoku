@@ -39,7 +39,8 @@ Pour Les Îles mystérieuses, l'unicité est vérifiée à partir de la premièr
 
 ## Fonctionnalités
 
-- **Placement** : touche une fiche suspect, puis une case. Le pion montre le visage du suspect et son initiale. Touche le pion pour le sélectionner, puis encore pour le retirer. Un suspect placé sur la grille est grisé dans la liste ; le Brouillon ne le grise pas.
+- **Pas de double appui** : le jeu n'en demande jamais, et il bloque le zoom que le double appui déclenche sur iPad.
+- **Placement** : touche une fiche suspect, puis une case. Le pion montre le visage du suspect et son initiale. Un seul appui sur le pion le retire. Un suspect placé sur la grille est grisé dans la liste ; le Brouillon ne le grise pas.
 - **Croix** : touche une case vide, fais un appui long ou un clic droit. Glisse le doigt sur plusieurs cases vides pour en tracer en série.
 - **Croix automatiques** : quand un suspect est placé, les cases libres de sa rangée et de sa colonne reçoivent une croix claire. Les objets non occupables n'en reçoivent pas. Ce comportement se désactive dans les Options.
 - **Brouillon** : active le bouton, choisis un suspect et touche toutes ses cases possibles. Des vignettes apparaissent, jusqu'à 4 visibles par case. Un appui long sur une vignette la transforme en vrai pion.
