@@ -5,9 +5,10 @@
 (function (root) {
   'use strict';
   root.MURDOKU_VERSION = {
-    VERSION: '1.13',
+    VERSION: '1.14',
     DATE: '2026-10-23',
     HISTORY: [
+      { v: '1.14', d: '2026-10-23', t: 'Police Montserrat hébergée avec le jeu : plus de textes très fins sur Chrome iOS, chargement plus rapide, polices disponibles hors ligne.' },
       { v: '1.13', d: '2026-10-23', t: 'iPhone : fond plein sur toute la hauteur (plus de bande blanche), titre net (ombre retirée), barre d’état teintée aux couleurs de l’énigme, marges de sécurité en haut et en bas pour l’application installée (iOS 26).' },
       { v: '1.12', d: '2026-10-23', t: 'iPhone : mise en page dédiée en portrait (légende sur deux lignes, plateau pleine largeur, règles spéciales dans la boîte d’information), zones sûres (encoche, barre du bas) respectées, fond sans bande blanche.' },
       { v: '1.11', d: '2026-10-23', t: 'Petits écrans (tablette Android 10\u2033, iPad Air…) : mise en page compacte. Plateau et fiches agrandis, textes plus lisibles, bulles de règles retirées de l’écran de jeu (elles restent dans Règles et le Menu). Mode sombre automatique du navigateur désactivé (couleurs inversées). Mise en page recalculée quand la police arrive tard.' },

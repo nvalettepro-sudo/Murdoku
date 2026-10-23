@@ -1,0 +1,3 @@
+Montserrat — Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)
+Licence : SIL Open Font License, Version 1.1 — https://openfontlicense.org
+Les fichiers .woff2 de ce dossier sont des instances statiques (une graisse par fichier, sous-ensemble latin) extraites de la police variable distribuée par Google Fonts.
