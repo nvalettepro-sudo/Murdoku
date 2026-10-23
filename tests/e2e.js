@@ -91,7 +91,7 @@ async function play(browser, ctxOpts, id, label) {
 }
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(process.env.E2E_CHANNEL ? { channel: process.env.E2E_CHANNEL } : {});
   const ipad = { viewport: { width: 1180, height: 820 }, hasTouch: false, deviceScaleFactor: 1 };
   const ipadPortrait = { viewport: { width: 820, height: 1180 }, deviceScaleFactor: 1 };
   const pc = { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 };

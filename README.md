@@ -103,7 +103,7 @@ node tests/solve-all.js --quick  # vérification rapide, utilisée en intégrati
 node tests/gen-solutions.js <id> # enregistre la solution dans le fichier de l'énigme
 ```
 
-Le test de bout en bout joue des parties dans Chromium. Il demande Playwright et un serveur local :
+Le test de bout en bout joue des parties dans Chromium. La CI le lance aussi (job « e2e », avec le Chrome du runner). En local, il demande Playwright et un serveur local :
 
 ```bash
 node tests/e2e.js http://localhost:8000/
