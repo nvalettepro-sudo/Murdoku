@@ -532,12 +532,18 @@
   function scaleOf(el) {
     return el.offsetWidth ? el.getBoundingClientRect().width / el.offsetWidth : 1;
   }
-  // Les polices web peuvent arriver après le premier rendu : on réajuste alors les prénoms.
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(function () {
-      if (cur && cur.stage) { fitNames(cur.stage.querySelector('.suspects')); B.fitLabels(cur.svg); }
-      else B.fitLabels(app);
-    });
+  // Les polices web peuvent arriver après le premier rendu (réseau lent) : le texte s'élargit alors.
+  // On refait donc toute la mise en page des fiches, des prénoms, des étiquettes et de l'en-tête.
+  function refitAll() {
+    if (cur && cur.stage) {
+      layoutCards(); B.fitLabels(cur.svg);
+      if (cur.L.compact) { const h1 = cur.stage.querySelector('.brand h1'); if (h1) h1.style.fontSize = ''; fitBrand(); }
+      if (cur.compact) renderDetail();
+    } else B.fitLabels(app);
+  }
+  if (document.fonts) {
+    if (document.fonts.ready) document.fonts.ready.then(refitAll);
+    if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', refitAll);
   }
 
   function renderDetail() {

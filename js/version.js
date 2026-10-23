@@ -8,7 +8,7 @@
     VERSION: '1.11',
     DATE: '2026-10-23',
     HISTORY: [
-      { v: '1.11', d: '2026-10-23', t: 'Petits écrans (tablette Android 10\u2033, iPad Air…) : mise en page compacte. Plateau et fiches agrandis, textes plus lisibles, bulles de règles retirées de l’écran de jeu (elles restent dans Règles et le Menu).' },
+      { v: '1.11', d: '2026-10-23', t: 'Petits écrans (tablette Android 10\u2033, iPad Air…) : mise en page compacte. Plateau et fiches agrandis, textes plus lisibles, bulles de règles retirées de l’écran de jeu (elles restent dans Règles et le Menu). Mode sombre automatique du navigateur désactivé (couleurs inversées). Mise en page recalculée quand la police arrive tard.' },
       { v: '1.10', d: '2026-10-23', t: 'Tests : les parcours de jeu complets (iPad paysage et portrait, PC) tournent désormais automatiquement sur GitHub. Aucun changement du jeu.' },
       { v: '1.9', d: '2026-10-23', t: 'Publication : les liens d’aperçu des PR sont listés dans le résumé du job (onglet Actions). Aucun changement du jeu.' },
       { v: '1.8', d: '2026-10-23', t: 'Un seul appui sur un pion le retire. Le double appui qui zoomait la page sur iPad est bloqué.' },

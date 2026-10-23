@@ -1,3 +1,5 @@
+/* Page claire uniquement : empêche le mode sombre automatique du navigateur d'inverser les couleurs */
+:root { color-scheme: only light; }
 /* Murdoku — styles
  * La page de jeu est une « planche » à dimensions fixes (comme les fiches PDF),
  * mise à l'échelle pour tenir dans l'écran (iPad, PC) en paysage ou en portrait.
