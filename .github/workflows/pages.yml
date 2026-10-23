@@ -2,7 +2,7 @@ name: Publication (site + aperçus)
 
 # Publie sur GitHub Pages :
 #   - la version officielle (branche main) à la racine du site ;
-#   - un aperçu de chaque PR ouverte dans preview/pr-<numéro>/.
+#   - un aperçu de chaque PR ouverte dans preview/pr-<numéro>/ (aucun commentaire n'est posté : pas d'e-mail GitHub).
 # Se déclenche quand main change, et après chaque passage réussi des tests sur une PR.
 # Les déploiements partent toujours du contexte de main (règle de l'environnement github-pages).
 # Réglage requis une seule fois : Settings → Pages → Source → « GitHub Actions ».
@@ -19,8 +19,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  pull-requests: write
-  issues: write
+  pull-requests: read
 
 concurrency:
   group: pages
@@ -68,20 +67,3 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@v4
 
-      - name: Poster le lien d'aperçu sur chaque PR (une seule fois par PR)
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BASE: ${{ steps.deploy.outputs.page_url }}
-        run: |
-          set -euo pipefail
-          while read -r n; do
-            [ -z "$n" ] && continue
-            if gh api "repos/$GITHUB_REPOSITORY/issues/$n/comments" --jq '.[].body' | grep -q 'murdoku-preview'; then
-              continue
-            fi
-            gh pr comment "$n" -R "$GITHUB_REPOSITORY" --body "🔎 **Aperçu jouable de cette PR** : ${BASE}preview/pr-$n/
-
-          Il est mis à jour automatiquement à chaque modification de la PR, une fois les tests passés. Les parties jouées dans l'aperçu sont enregistrées à part du site officiel.
-
-          <!-- murdoku-preview -->"
-          done < previews.txt
