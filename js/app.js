@@ -239,6 +239,7 @@
   function layoutFor(orient) {
     const av = availSize(), vw = av.w, vh = av.h;
     if (orient === 'portrait' && vw < 600) return layoutPhone(vw, vh);
+    if (orient === 'landscape' && vh <= 460) return layoutPhoneLand(vw, vh);
     if (orient === 'portrait' && Math.min(vw / 1000, vh / 1420) < 0.85) return layoutPortraitCompact(vw, vh);
     if (orient !== 'landscape' || Math.min(vw / 1500, vh / 1000) >= 0.85) {
       const std = Object.assign({ key: orient }, LAYOUT[orient]);
@@ -247,7 +248,8 @@
       }
       return std;
     }
-    const W = Math.round(vw / COMPACT_K), H = Math.round(vh / COMPACT_K);
+    const kk = vh <= 460 ? 0.7 : COMPACT_K; // téléphone en paysage : écran très bas
+    const W = Math.round(vw / kk), H = Math.round(vh / kk);
     const m = 18, gap = 14, legendH = 76 + 24 * legendExtra(), toolH = 70, brandH = 88;
     const dense = cur && cur.def && cur.def.people.length > 10; // beaucoup de fiches : plateau un peu plus petit, fiches plus larges
     const B = Math.min(H - 2 * m - legendH - gap - (dense ? toolH + 10 : 0), Math.round(W * 0.5), dense ? 660 : 9999);
@@ -256,10 +258,32 @@
     const tool = dense ? [x0, m + legendH + gap + B + 10, B, toolH] : [m, H - m - toolH, Lw, toolH];
     const sTop = m + brandH + 10, sH = (dense ? H - m : H - m - toolH - 10) - sTop;
     return {
-      key: 'compact:' + vw + 'x' + vh, compact: true, k: COMPACT_K, minFs: dense ? 12.5 : 14,
+      key: 'compact:' + vw + 'x' + vh, compact: true, k: kk, minFs: dense ? 12.5 : 14,
       W: W, H: H, brand: [m, m, Lw - 262, brandH], rules3: null, legend: [x0, m, B, legendH],
       board: [x0, m + legendH + gap, B, B], suspects: [m, sTop, Lw, sH], detail: [m, sTop + sH - 66, Lw, 66],
       toolbar: tool, result: [m, sTop - 14, Lw, sH + 14], topbtns: [m + Lw - 250, m + 6, 250, 66]
+    };
+  }
+
+  // Téléphone tenu horizontalement (écran très bas, ≈ 390 px) : plateau carré en pleine hauteur à droite ;
+  // tout le reste (titre, boutons, légende, portraits, ligne d'information, outils) s'empile dans la colonne de gauche.
+  function layoutPhoneLand(vw, vh) {
+    const k = 0.7, W = Math.round(vw / k), H = Math.round(vh / k);
+    const m = 10, rowH = 66, toolH = 62;
+    const notes = cur && cur.def ? (cur.def.globals || []).filter(function (g) { return g.text; }).length : 0;
+    const extra = legendExtra();
+    const B = Math.min(H - 2 * m, Math.round(W * 0.46));
+    const x0 = W - m - B, Lw = x0 - 2 * m;
+    const legY = m + rowH + 6, legH = extra ? 108 : 84;
+    const sTop = legY + legH + 6;
+    const detH = notes ? 22 + 38 * notes : 62;
+    const toolY = H - m - toolH, detY = toolY - 4 - detH;
+    return {
+      key: 'phoneland:' + vw + 'x' + vh + ':' + extra + notes, compact: true, phoneL: true, k: k, minFs: 11,
+      W: W, H: H, brand: [m, m, Lw - 244, rowH], topbtns: [m + Lw - 238, m, 238, rowH], rules3: null,
+      legend: [m, legY, Lw, legH], board: [x0, Math.round((H - B) / 2), B, B],
+      suspects: [m, sTop, Lw, detY - 6 - sTop], detail: [m, detY, Lw, detH],
+      toolbar: [m, toolY, Lw, toolH], result: [m, legY, Lw, toolY - legY - 6]
     };
   }
 
@@ -348,7 +372,7 @@
     const L = Object.assign({}, layoutFor(cur.orient));
     // Règles spéciales de l'énigme (parité, comptages…) : bandeau sous les fiches
     const notes = (def.globals || []).filter(function (g) { return g.text; });
-    if (notes.length && !L.phone) {
+    if (notes.length && !L.phone && !L.phoneL) {
       const sb = L.suspects.slice();
       const nh = L.phone ? 14 + 50 * notes.length : cur.orient === 'portrait' ? 54 : 30 + 30 * notes.length;
       L.suspects = [sb[0], sb[1], sb[2], sb[3] - nh - 8];
@@ -357,7 +381,7 @@
     }
     cur.L = L;
     const pal = def.palette || {};
-    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (L.phone ? ' phone' : '') + (L.compact && !L.phone && L.brand[2] < 440 ? ' slim' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
+    let html = '<div class="stage-wrap"><div class="stage ' + cur.orient + (L.compact ? ' compact-l' : '') + (L.phone ? ' phone' : '') + (L.phoneL ? ' phoneL notesd' : '') + (L.phone ? ' notesd' : '') + (L.compact && !L.phone && L.brand[2] < 440 ? ' slim' : '') + (pal.titleDark ? ' dark-title' : '') + '" style="' + paletteVars(pal) + (L.compact ? ';width:' + L.W + 'px;height:' + L.H + 'px' : '') + '">';
     // en-tête
     const h1 = L.compact ? (def.title.length > 18 ? 26 : 32) : def.title.length > 22 ? 30 : def.title.length > 15 ? 35 : 42;
     html += '<header class="region brand" style="' + box(L.brand) + ';--h1:' + h1 + 'px">' + logoSvg() +
@@ -414,6 +438,7 @@
 
   // Légende : le contenu de chaque bulle est réduit, si besoin, pour tenir dans la bulle (jamais de texte qui dépasse)
   function fitLegend(root) {
+    if (cur && cur.L && cur.L.phone) return; // téléphone portrait : les objets passent à la ligne, la hauteur de la légende s'adapte (fitLegendPhone)
     Array.prototype.forEach.call(root.querySelectorAll('.legend .lg'), function (lg) {
       const inner = lg.querySelector('.lgi');
       if (!inner) return;
@@ -421,7 +446,18 @@
       const cs = getComputedStyle(lg);
       const availH = lg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
       const availW = lg.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const sc = Math.min(1, availH / inner.offsetHeight, availW / inner.scrollWidth);
+      // Étendue réelle du contenu (titre et objets), des deux côtés : un contenu centré qui déborde
+      // ne se voit pas avec scrollWidth.
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      const add = function (q) { if (q.width < 1) return; x0 = Math.min(x0, q.left); x1 = Math.max(x1, q.right); y0 = Math.min(y0, q.top); y1 = Math.max(y1, q.bottom); };
+      const rg = document.createRange();
+      const h = inner.querySelector('h4');
+      if (h) { rg.selectNodeContents(h); add(rg.getBoundingClientRect()); }
+      Array.prototype.forEach.call(inner.querySelectorAll('.it'), function (it) { add(it.getBoundingClientRect()); });
+      const k = scaleOf(lg) || 1; // rapport d'échelle de la planche
+      const ew = (x1 - x0) / k, eh = (y1 - y0) / k;
+      if (!isFinite(ew) || ew <= 0) return;
+      const sc = Math.min(1, availH / eh, availW / ew);
       if (sc < 0.999) { inner.style.transform = 'scale(' + sc.toFixed(3) + ')'; inner.style.transformOrigin = 'center center'; }
     });
   }
@@ -433,7 +469,7 @@
     const slim = cur.stage.classList.contains('slim');
     const avail = slim ? br.clientWidth : br.clientWidth - diff.offsetWidth - 20;
     let fs = parseFloat(getComputedStyle(h1).fontSize), guard = 0;
-    while (h1.scrollWidth > avail && fs > 15 && guard++ < 30) { fs -= 1; h1.style.fontSize = fs + 'px'; }
+    while (h1.scrollWidth > avail && fs > (slim ? 11 : 15) && guard++ < 40) { fs -= 1; h1.style.fontSize = fs + 'px'; }
   }
 
   function toolBtn(id, label, icon) {
@@ -564,9 +600,15 @@
     const box2 = cur.stage.querySelector('.suspects');
     const L = cur.L;
     const n = cur.P.people.length;
-    const W = L.suspects[2], H = L.suspects[3];
+    const W = L.suspects[2];
     const cap = 21;
+    // La ligne d'information (indice du suspect choisi) s'affiche en bas de la zone quand seuls les portraits restent :
+    // on lui réserve sa place, les portraits ne doivent jamais la recouvrir.
+    const dt = L.detail, st = L.suspects;
+    const detailInside = dt && dt[0] < st[0] + st[2] && dt[0] + dt[2] > st[0] && dt[1] < st[1] + st[3] && dt[1] + dt[3] > st[1];
+    const Hc = detailInside ? Math.max(60, dt[1] - st[1] - 6) : st[3];
     function measure(mode) {
+      const H = mode === 'compact' ? Hc : st[3];
       box2.classList.toggle('compact', mode === 'compact');
       box2.classList.toggle('horiz', mode === 'horiz');
       box2.style.setProperty('--fs', '16px');
@@ -644,7 +686,7 @@
     const i = cur.selected;
     if (i < 0) {
       const gl = (cur.def.globals || []).filter(function (g) { return g.text; });
-      det.innerHTML = cur.L.phone && gl.length
+      det.innerHTML = (cur.L.phone || cur.L.phoneL) && gl.length
         ? '<div class="gl">' + gl.map(function (g, j) { return '<div class="note"><span class="num">' + (j + 1) + '</span><span>' + md(g.text) + '</span></div>'; }).join('') + '</div>'
         : '<span class="txt">Touche un suspect pour lire son indice, puis une case pour le placer.</span>';
     } else {
