@@ -6,7 +6,7 @@ const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const base = process.argv[2] || 'http://localhost:8765/';
 const ids = fs.readdirSync(path.join(__dirname, '..', 'puzzles')).filter(f => f.endsWith('.js')).map(f => f.replace(/\.js$/, ''));
-const vps = (process.env.VPS || '1500x1000,1194x834,1280x690,1024x768,820x1180,393x852').split(',').map(x => x.split('x').map(Number));
+const vps = (process.env.VPS || '1500x1000,1194x834,1280x690,1024x768,820x1180,393x852,844x390,932x430,667x375').split(',').map(x => x.split('x').map(Number));
 
 function inspect() {
   const out = [];
@@ -45,6 +45,20 @@ function inspect() {
     const a = parts[i][1], c = parts[j][1];
     if (a.left < c.right - 2 && c.left < a.right - 2 && a.top < c.bottom - 2 && c.top < a.bottom - 2) out.push(parts[i][0] + ' chevauche ' + parts[j][0]);
   }
+  // les portraits ne doivent jamais recouvrir la ligne d'information ni sortir de leur zone
+  const det = document.querySelector('.detail.show');
+  if (det) {
+    const d = det.getBoundingClientRect();
+    document.querySelectorAll('.card').forEach(function (c) {
+      const q = c.getBoundingClientRect();
+      if (q.left < d.right - 2 && d.left < q.right - 2 && q.top < d.bottom - 2 && d.top < q.bottom - 2) out.push('un portrait recouvre la ligne d’information');
+    });
+  }
+  const sus = document.querySelector('.suspects');
+  if (sus) {
+    const z = sus.getBoundingClientRect();
+    document.querySelectorAll('.card').forEach(function (c) { const q = c.getBoundingClientRect(); if (q.bottom > z.bottom + 2 || q.right > z.right + 2) out.push('un portrait sort de sa zone'); });
+  }
   const bd = document.querySelector('.boardbox').getBoundingClientRect();
   parts.forEach(p => { const q = p[1]; if (q.bottom > bd.top + 1 && q.left < bd.right && q.right > bd.left && q.top < bd.top) out.push(p[0] + ' chevauche le plateau'); });
   return out;
@@ -56,7 +70,8 @@ function inspect() {
   for (const [w, h] of vps) {
     const page = await browser.newPage({ viewport: { width: w, height: h } });
     for (const id of ids) {
-      await page.goto(base + '#/p/' + id);
+      const safe = h <= 460 && w > h ? '?safe=0,47,21,47' : (w < 600 ? '?safe=47,0,34,0' : '');
+      await page.goto(base + safe + '#/p/' + id);
       await page.reload();
       await page.waitForSelector('svg.board');
       await page.evaluate(() => document.fonts.ready);
